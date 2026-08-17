@@ -159,10 +159,9 @@ const dicePicker = async rollResults => {
     rollResults,
     theme
   })
-  const contentTemplate = document.createElement('template')
-  contentTemplate.innerHTML = contentHtml.trim()
-  const content = contentTemplate.content.firstElementChild
-  const unselectedDice = {
+    const content = document.createElement('div')
+    content.insertAdjacentHTML('beforeend', contentHtml)
+    const unselectedDice = {
     dice: rollResults.results.map(({ faces, result }) => ({ effect: false, faces, result, total: false })),
     total: null,
     effectDice: []

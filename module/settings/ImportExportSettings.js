@@ -54,7 +54,7 @@ export default class ImportExportSettings extends HandlebarsApplicationMixin(App
       theme: { current, custom }
     }
 
-    await saveDataToFile(JSON.stringify(settings), 'json', 'my-cortex-prime-settings.json')
+ foundry.utils.saveDataToFile(JSON.stringify(settings), 'json', 'my-cortex-prime-settings.json')
   }
 
   async _importSettings(event) {

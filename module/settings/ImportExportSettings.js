@@ -131,14 +131,19 @@ export default class ImportExportSettings extends HandlebarsApplicationMixin(App
   async _resetSettings (event) {
     event.preventDefault()
 
-    let confirmed
-
-    await Dialog.confirm({
-      title: localizer('AreYouSure'),
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: localizer('AreYouSure')
+      },
       content: localizer('ConfirmResetSettingsMessage'),
-      yes: () => { confirmed = true },
-      no: () => { confirmed = false },
-      defaultYes: false
+      yes: {
+        default: false
+      },
+      no: {
+        default: true
+      },
+      rejectClose: false,
+      modal: true
     })
 
     if (confirmed) {

@@ -85,20 +85,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
       '[data-action="openActorSettingsHelp"]': this._openActorSettingsHelp
     }
 
-    const clickHandlers = {
-      '#add-new-actor-type': this._addNewActorType,
-      '.add-descriptor': this._addDescriptor,
-      '.add-simple-trait': this._addSimpleTrait,
-      '.add-sfx': this._addSfx,
-      '.add-sub-trait': this._addSubTrait,
-      '.add-trait': this._addTrait,
-      '.add-trait-set': this._addTraitSet,
-      '.breadcrumb:not(.active), .go-back': this._breadcrumbChange,
-      '.default-image': this._changeDefaultImage,
-      '.duplicate-item': this._duplicateItem,
-      '.new-die': this._newDie,
-      '.view-change': this._viewChange
-    }
 
     for (const [selector, handler] of Object.entries(clickHandlers)) {
       this.element.querySelectorAll(selector).forEach(element => {

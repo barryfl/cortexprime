@@ -59,26 +59,30 @@ export default () => {
     setCssVars(theme)
     if (game.settings.get('cortexprime', 'WelcomeSeen') === false) {
       if (game.user.isGM) {
-        const seeWelcome = await new Promise(resolve => {
-          new Dialog(
-            {
-              title: localizer('WelcomeTitle'),
-              content: `<div class="bkg-lighter-grey ba-2-primary mb-4 pa-2"><p>${localizer('SettingsMessage')}</p></div>`,
-              buttons: {
-                ok: {
-                  label: localizer("Okay"),
-                  callback: () => resolve(true)
-                }
-              },
-              default: "ok",
-              close: () => resolve(false),
-            },
-            {
-              width: 500,
-              height: 'auto',
-            }
-          ).render(true)
-        })
+        const seeWelcome = await foundry.applications.api.DialogV2.confirm({
+  window: {
+    title: localizer('WelcomeTitle')
+  },
+
+  position: {
+    width: 500
+  },
+
+  content: `
+    <div class="bkg-lighter-grey ba-2-primary mb-4 pa-2">
+      <p>${localizer('SettingsMessage')}</p>
+    </div>
+  `,
+
+  yes: {
+    label: localizer('Okay'),
+    default: true
+  },
+
+  no: {
+    label: localizer('Cancel')
+  }
+})
 
         if (seeWelcome) {
           await game.settings.set('cortexprime', 'WelcomeSeen', true)

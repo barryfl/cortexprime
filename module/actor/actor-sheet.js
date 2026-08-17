@@ -82,6 +82,14 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   async _onRender (context, options) {
     await super._onRender(context, options)
 
+    for (const tab of this.element.querySelectorAll('.sheet-tabs [data-tab]')) {
+      tab.addEventListener('click', event => {
+        event.preventDefault()
+        const { tab: tabId, group } = event.currentTarget.dataset
+        this.changeTab(tabId, group)
+      })
+    }  
+
     for (const select of this.element.querySelectorAll('.die-select')) {
       select.addEventListener('change', event => this._onDieChange(event))
       select.addEventListener('mouseup', event => this._onDieRemove(event))

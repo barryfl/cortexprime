@@ -24,6 +24,7 @@ export const resetDataPoint = async function (path, target, value) {
 
 export const toggleItems = async function (event, target = event.currentTarget) {
   event.preventDefault()
+  await this._saveCurrentForm()
   const { path } = target.dataset
   const value = !foundry.utils.getProperty(this.actor, path)
 
@@ -42,6 +43,7 @@ export const removeDataPoint = async function (data, path, target, key) {
 
 export const removeItems = async function (event, actionTarget = event.currentTarget) {
   event.preventDefault()
+  await this._saveCurrentForm()
   const {
     path,
     itemKey,

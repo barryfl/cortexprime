@@ -13,6 +13,7 @@ const { HandlebarsApplicationMixin } = foundry.applications.api
 const { ActorSheetV2 } = foundry.applications.sheets
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
+  _savePromise = Promise.resolve()
 
   get actor () {
     return super.actor
@@ -20,6 +21,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   /** @override */
   static DEFAULT_OPTIONS = {
+    tag: 'form',
     classes: ['cortexprime', 'sheet', 'actor', 'actor-sheet'],
     actions: {
       actorTypeConfirm: function (event, target) { return this._actorTypeConfirm(event, target) },
@@ -27,7 +29,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       addComplication: function (event, target) { return this._addComplication(event, target) },
       addDescriptor: function (event, target) { return this._addDescriptor(event, target) },
       addNote: function (event, target) { return this._addNote(event, target) },
-      addPp: function () { return this.actor.changePpBy(1) },
+      addPp: function () { return this._addPp() },
       addSfx: function (event, target) { return this._addSfx(event, target) },
       addSubTrait: function (event, target) { return this._addSubTrait(event, target) },
       addToPool: function (event, target) { return this._addToPool(event, target) },
@@ -39,6 +41,11 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       toggleItem: function (event, target) { return toggleItems.call(this, event, target) },
       traitSetEdit: function (event, target) { return this._traitSetEdit(event, target) },
       updateActorSettings: function (event) { return this._updateActorSettings(event) }
+    },
+    form: {
+      closeOnSubmit: false,
+      submitOnChange: true,
+      handler: function (event, form, formData) { return this._saveForm(event, form, formData) }
     },
     position: {
       width: 960,
@@ -78,14 +85,30 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     }
   }
 
+  async _saveForm (event, form, submittedFormData) {
+    if (!form || event?.target?.classList?.contains('die-select') || event?.target?.classList?.contains('pp-number-field')) return
+
+    const updateData = foundry.utils.deepClone(submittedFormData.object)
+
+    this._savePromise = this._savePromise.then(() => this.actor.update(updateData))
+    return this._savePromise
+  }
+
+  async _saveCurrentForm () {
+    if (this.form) await this.submit()
+    await this._savePromise
+  }
+
   /** @override */
   async _onRender (context, options) {
     await super._onRender(context, options)
 
     for (const tab of this.element.querySelectorAll('.sheet-tabs [data-tab]')) {
-      tab.addEventListener('click', event => {
+      tab.addEventListener('click', async event => {
         event.preventDefault()
-        const { tab: tabId, group } = event.currentTarget.dataset
+        const tabElement = event.currentTarget
+        await this._saveCurrentForm()
+        const { tab: tabId, group } = tabElement.dataset
         this.changeTab(tabId, group)
       })
     }  
@@ -110,6 +133,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _actorTypeConfirm (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const actorTypes = game.settings.get('cortexprime', 'actorTypes')
     const actorTypeIndex = this.element.querySelector('.actor-type-select')?.value
 
@@ -126,6 +150,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _addAsset (event, target = event.currentTarget) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = target.dataset
     const currentAssets = foundry.utils.getProperty(this.actor, `${path}.assets`) ?? {}
 
@@ -146,6 +171,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _addComplication(event, target = event.currentTarget) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = target.dataset
     const currentComplications = foundry.utils.getProperty(this.actor, `${path}.complications`) ?? {}
 
@@ -164,6 +190,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _addDescriptor(event, target = event.currentTarget) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = target.dataset
     const currentDescriptors = foundry.utils.getProperty(this.actor, `${path}.descriptors`) ?? {}
 
@@ -178,6 +205,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _addNote(event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const currentNotes = this.actor.system.actorType.notes ?? {}
 
     await this._resetDataPoint('system.actorType', 'notes', {
@@ -191,6 +219,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _addSfx (event, target = event.currentTarget) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = target.dataset
     const currentSfx = foundry.utils.getProperty(this.actor, `${path}.sfx`) ?? {}
 
@@ -206,6 +235,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _addSubTrait(event, target = event.currentTarget) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = target.dataset
     const currentSubTraits = foundry.utils.getProperty(this.actor, `${path}.subTraits`) ?? {}
 
@@ -223,6 +253,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   async _addToPool (event, target = event.currentTarget) {
+    await this._saveCurrentForm()
     const { consumable, path, label } = target.dataset
     let value = foundry.utils.getProperty(this.actor, `${path}.value`)
 
@@ -244,6 +275,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   async _addTrait (event, target = event.currentTarget) {
+    await this._saveCurrentForm()
     const { path } = target.dataset
     const currentCustomTraits = foundry.utils.getProperty(this.actor, `${path}.customTraits`) ?? {}
 
@@ -262,6 +294,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   async _closeTraitSetEdit(event) {
+    await this._saveCurrentForm()
     await this.actor.update({
       ['system.actorType.traitSetEdit']: null
     })
@@ -328,6 +361,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _newDie (event, actionTarget = event.currentTarget) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { target } = actionTarget.dataset
     const currentDiceData = foundry.utils.getProperty(this.actor, target)
     const currentDice = currentDiceData?.value ?? {}
@@ -346,8 +380,10 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _onDieChange (event) {
     event.preventDefault()
-    const { target, key: targetKey } = event.currentTarget.dataset
-    const targetValue = event.currentTarget.value
+    const dieSelect = event.currentTarget
+    await this._saveCurrentForm()
+    const { target, key: targetKey } = dieSelect.dataset
+    const targetValue = dieSelect.value
     const currentDiceData = foundry.utils.getProperty(this.actor, target)
 
     console.log(target)
@@ -361,7 +397,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     event.preventDefault()
 
     if (event.button === 2) {
-      const { target, key: targetKey } = event.currentTarget.dataset
+      const dieSelect = event.currentTarget
+      await this._saveCurrentForm()
+      const { target, key: targetKey } = dieSelect.dataset
       const currentDiceData = foundry.utils.getProperty(this.actor, target)
 
       const newValue = objectReindexFilter(currentDiceData.value ?? {}, (_, key) => parseInt(key, 10) !== parseInt(targetKey))
@@ -372,15 +410,23 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _ppNumberChange (event) {
     event.preventDefault()
-    const parsedValue = parseInt(event.currentTarget.value, 10)
+    const ppField = event.currentTarget
+    await this._saveCurrentForm()
+    const parsedValue = parseInt(ppField.value, 10)
     const currentValue = parseInt(this.actor.pp.value, 10)
     const newValue = parsedValue < 0 ? 0 : parsedValue
     const changeAmount = newValue - currentValue
 
-    this.actor.changePpBy(changeAmount, true)
+    await this.actor.changePpBy(changeAmount, true)
+  }
+
+  async _addPp () {
+    await this._saveCurrentForm()
+    await this.actor.changePpBy(1)
   }
 
   async _spendPp () {
+    await this._saveCurrentForm()
     await this.actor.changePpBy(-1)
 
     if (game.dice3d) {
@@ -399,6 +445,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   async _traitSetEdit(event, target = event.currentTarget) {
+    await this._saveCurrentForm()
     const { traitSet } = target.dataset
 
     await this.actor.update({
@@ -408,6 +455,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _updateActorSettings(event) {
     event.preventDefault()
+    await this._saveCurrentForm()
 
     const actorData = this.actor.system.actorType
     const actorTypeSettings = objectFindValue(game.settings.get('cortexprime', 'actorTypes'), actorType => actorType.id === actorData.id)
@@ -468,5 +516,10 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
     this._resetDataPoint('system', 'actorType', newData)
     this.actor.update()
+  }
+
+  async close (options = {}) {
+    await this._saveCurrentForm()
+    return super.close(options)
   }
 }

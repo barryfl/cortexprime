@@ -51,15 +51,15 @@ export const removeItems = async function (event, actionTarget = event.currentTa
     target
   } = actionTarget.dataset
 
-  let confirmed
-
-  await Dialog.confirm({
-    title: localizer('AreYouSure'),
-    content: `${localizer('Remove')} ${itemName}?`,
-    yes: () => { confirmed = true },
-    no: () => { confirmed = false },
-    defaultYes: false
-  })
+const confirmed = await foundry.applications.api.DialogV2.confirm({
+  window: {
+    title: localizer('AreYouSure')
+  },
+  content: `${localizer('Remove')} ${itemName}?`,
+  yes: {
+    default: false
+  }
+})
 
   if (confirmed) {
     const data = foundry.utils.getProperty(this.actor, `${path}.${target}`)

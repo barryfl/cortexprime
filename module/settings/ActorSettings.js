@@ -315,20 +315,33 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     const currentImage = source[actorTypeIndex]?.defaultImage || 'icons/svg/mystery-man.svg'
     const _this = this
 
-    const imagePicker = await new FilePicker({
-      type: 'image',
-      current: currentImage,
-      async callback (newImage) {
-        source[actorTypeIndex].defaultImage = newImage
+async _changeDefaultImage (event) {
+  event.preventDefault()
 
-        await game.settings.set('cortexprime', 'actorTypes', source)
+  const { actorTypeIndex } = event.currentTarget.dataset
+  const source = game.settings.get('cortexprime', 'actorTypes')
+  const currentImage =
+    source[actorTypeIndex]?.defaultImage || 'icons/svg/mystery-man.svg'
 
-        await _this.render({ force: true })
-      }
-    })
+  const imagePicker = new foundry.applications.apps.FilePicker({
+    type: 'image',
+    current: currentImage,
+    callback: async newImage => {
+      source[actorTypeIndex].defaultImage = newImage
 
-    await imagePicker.render()
-  }
+      await game.settings.set(
+        'cortexprime',
+        'actorTypes',
+        source
+      )
+
+      await this.render({ force: true })
+    }
+  })
+
+  await imagePicker.render(true)
+}
+
 
   async changeView (name, target) {
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')

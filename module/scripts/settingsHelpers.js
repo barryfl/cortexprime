@@ -41,14 +41,14 @@ export const removeItem = function (element) {
       stayOnPage
     } = event.currentTarget.dataset
 
-    let confirmed
-
-    await Dialog.confirm({
-      title: localizer('AreYouSure'),
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: localizer('AreYouSure')
+      },
       content: `${localizer('Remove')} ${itemName}?`,
-      yes: () => { confirmed = true },
-      no: () => { confirmed = false },
-      defaultYes: false
+      yes: {
+        default: false
+      }
     })
 
     if (confirmed) {

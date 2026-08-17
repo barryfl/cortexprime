@@ -155,10 +155,13 @@ const updateDice = async (element, dice) => {
 const dicePicker = async rollResults => {
   const themes = game.settings.get('cortexprime', 'themes')
   const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
-  const content = await foundry.applications.handlebars.renderTemplate('systems/cortexprime/templates/dialog/dice-picker.html', {
+  const contentHtml = await foundry.applications.handlebars.renderTemplate('systems/cortexprime/templates/dialog/dice-picker.html', {
     rollResults,
     theme
   })
+  const contentTemplate = document.createElement('template')
+  contentTemplate.innerHTML = contentHtml.trim()
+  const content = contentTemplate.content.firstElementChild
   const unselectedDice = {
     dice: rollResults.results.map(({ faces, result }) => ({ effect: false, faces, result, total: false })),
     total: null,
@@ -196,6 +199,7 @@ const dicePicker = async rollResults => {
     buttons: [
       {
         action: 'confirm',
+        class: 'dialog-button confirm',
         default: true,
         icon: 'fa-solid fa-check',
         label: localizer('Confirm'),
@@ -214,7 +218,6 @@ const dicePicker = async rollResults => {
       const addToEffect = element.querySelector('.add-to-effect')
       const resetSelection = element.querySelector('.reset-selection')
       const effectDiceContainer = element.querySelector('.effect-dice')
-      const confirmSelection = element.querySelector('.confirm-selection')
 
         const setSelectionOptionsDisableTo = (value) => {
           addToTotal.disabled = value ?? !addToTotal.disabled
@@ -302,7 +305,7 @@ const dicePicker = async rollResults => {
         })
 
         addToEffect.addEventListener('click', async () => {
-          const diceForEffect = element.querySelectorAll('.result-die.selected')
+          const diceForEffect = [...element.querySelectorAll('.result-die.selected')]
 
           if (diceForEffect.length > 0) {
             effectDiceContainer.querySelector('.default')?.remove()
@@ -314,11 +317,13 @@ const dicePicker = async rollResults => {
               die.classList.toggle('selectable')
               dieCpt.classList.toggle('selected-cpt')
               dieCpt.classList.toggle('effect-cpt')
-
-              const faces = Number(die.dataset.faces)
-              const dieContent = await getAppendDiceContent({ key: die.dataset.key, dieRating: faces, value: faces, type: 'effect' })
-              effectDiceContainer.insertAdjacentHTML('beforeend', dieContent)
             }
+
+            const effectDiceHtml = await Promise.all(diceForEffect.map(async die => {
+              const faces = Number(die.dataset.faces)
+              return getAppendDiceContent({ key: die.dataset.key, dieRating: faces, value: faces, type: 'effect' })
+            }))
+            effectDiceContainer.insertAdjacentHTML('beforeend', effectDiceHtml.join(''))
 
             setSelectionDisable()
           }
@@ -370,7 +375,6 @@ const dicePicker = async rollResults => {
           resetSelection.disabled = true
         })
 
-        confirmSelection.addEventListener('click', () => dialog.submit())
     }
   })
 }

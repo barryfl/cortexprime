@@ -334,7 +334,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   await imagePicker.render(true)
 }
-}
 
   async changeView (name, target) {
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')

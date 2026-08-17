@@ -14,7 +14,7 @@
                 <option value="{{actorTypeIndex}}">{{or actorType (concat '[' (localize 'NoName') ']')}}</option>
               {{/each}}
             </select>
-            <button class="btn btn-primary-cpt {{ternary (eq theme.buttonStyle 'square') 'btn-square-cpt ' ''}}actor-type-confirm col-12" type="button">{{localize 'Confirm'}}</button>
+            <button class="btn btn-primary-cpt {{ternary (eq theme.buttonStyle 'square') 'btn-square-cpt ' ''}}actor-type-confirm col-12" data-action="actorTypeConfirm" type="button">{{localize 'Confirm'}}</button>
           </div>
         </div>
       </div>
@@ -74,7 +74,7 @@
                         <h2 class="my-0 section-primary-title-cpt">{{localize 'Notes'}}</h2>
                       </div>
                       <div class="flex-col">
-                        <button class="btn btn-icon btn-primary-cpt add-note" type="button">
+                        <button class="btn btn-icon btn-primary-cpt add-note" data-action="addNote" type="button">
                           <i class="fa fa-plus"></i>
                         </button>
                       </div>

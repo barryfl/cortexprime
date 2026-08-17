@@ -21,6 +21,25 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   /** @override */
   static DEFAULT_OPTIONS = {
     classes: ['cortexprime', 'sheet', 'actor', 'actor-sheet'],
+    actions: {
+      actorTypeConfirm: function (event, target) { return this._actorTypeConfirm(event, target) },
+      addAsset: function (event, target) { return this._addAsset(event, target) },
+      addComplication: function (event, target) { return this._addComplication(event, target) },
+      addDescriptor: function (event, target) { return this._addDescriptor(event, target) },
+      addNote: function (event, target) { return this._addNote(event, target) },
+      addPp: function () { return this.actor.changePpBy(1) },
+      addSfx: function (event, target) { return this._addSfx(event, target) },
+      addSubTrait: function (event, target) { return this._addSubTrait(event, target) },
+      addToPool: function (event, target) { return this._addToPool(event, target) },
+      addTrait: function (event, target) { return this._addTrait(event, target) },
+      closeTraitSetEdit: function (event) { return this._closeTraitSetEdit(event) },
+      newDie: function (event, target) { return this._newDie(event, target) },
+      removeItem: function (event, target) { return removeItems.call(this, event, target) },
+      spendPp: function () { return this._spendPp() },
+      toggleItem: function (event, target) { return toggleItems.call(this, event, target) },
+      traitSetEdit: function (event, target) { return this._traitSetEdit(event, target) },
+      updateActorSettings: function (event) { return this._updateActorSettings(event) }
+    },
     position: {
       width: 960,
       height: 900
@@ -59,38 +78,18 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     }
   }
 
-  /* -------------------------------------------- */
   /** @override */
-  activateListeners (html) {
-    super.activateListeners(html)
-    html.find('.update-actor-settings').click(this._updateActorSettings.bind(this))
-    html.find('.actor-type-confirm').click(this._actorTypeConfirm.bind(this))
-    html.find('.add-pp').click(() => { this.actor.changePpBy(1) })
-    html.find('.add-asset').click(this._addAsset.bind(this))
-    html.find('.add-complication').click(this._addComplication.bind(this))
-    html.find('.add-descriptor').click(this._addDescriptor.bind(this))
-    html.find('.add-note').click(this._addNote.bind(this))
-    html.find('.add-sfx').click(this._addSfx.bind(this))
-    html.find('.add-sub-trait').click(this._addSubTrait.bind(this))
-    html.find('.add-to-pool').click(this._addToPool.bind(this))
-    html.find('.add-trait').click(this._addTrait.bind(this))
-    html.find('.close-trait-set-edit').click(this._closeTraitSetEdit.bind(this))
-    html.find('.die-select').change(this._onDieChange.bind(this))
-    html.find('.die-select').on('mouseup', this._onDieRemove.bind(this))
-    html.find('.new-die').click(this._newDie.bind(this))
-    html.find('.pp-number-field').change(this._ppNumberChange.bind(this))
-    html.find('.spend-pp').click(() => {
-      this.actor
-        .changePpBy(-1)
-        .then(() => {
-          if (game.dice3d) {
-            game.dice3d.show({ throws: [{ dice: [{ result: 1, resultLabel: 1, type: 'dp', vectors: [], options: {} }] }] }, game.user, true)
-          }
-        })
-    })
-    html.find('.trait-set-edit').click(this._traitSetEdit.bind(this))
-    removeItems.call(this, html)
-    toggleItems.call(this, html)
+  async _onRender (context, options) {
+    await super._onRender(context, options)
+
+    for (const select of this.element.querySelectorAll('.die-select')) {
+      select.addEventListener('change', event => this._onDieChange(event))
+      select.addEventListener('mouseup', event => this._onDieRemove(event))
+    }
+
+    for (const field of this.element.querySelectorAll('.pp-number-field')) {
+      field.addEventListener('change', event => this._ppNumberChange(event))
+    }
   }
 
   /* -------------------------------------------- */
@@ -104,9 +103,11 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   async _actorTypeConfirm (event) {
     event.preventDefault()
     const actorTypes = game.settings.get('cortexprime', 'actorTypes')
-    const actorTypeIndex = $('.actor-type-select').val()
+    const actorTypeIndex = this.element.querySelector('.actor-type-select')?.value
 
     const actorType = actorTypes[actorTypeIndex]
+
+    if (!actorType) return
 
     await this.actor.update({
       'img': actorType.defaultImage,
@@ -115,9 +116,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _addAsset (event) {
+  async _addAsset (event, target = event.currentTarget) {
     event.preventDefault()
-    const { path } = event.currentTarget.dataset
+    const { path } = target.dataset
     const currentAssets = foundry.utils.getProperty(this.actor, `${path}.assets`) ?? {}
 
     console.log(path, currentAssets)
@@ -135,9 +136,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _addComplication(event) {
+  async _addComplication(event, target = event.currentTarget) {
     event.preventDefault()
-    const { path } = event.currentTarget.dataset
+    const { path } = target.dataset
     const currentComplications = foundry.utils.getProperty(this.actor, `${path}.complications`) ?? {}
 
     await this._resetDataPoint(path, 'complications', {
@@ -153,9 +154,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _addDescriptor(event) {
+  async _addDescriptor(event, target = event.currentTarget) {
     event.preventDefault()
-    const { path } = event.currentTarget.dataset
+    const { path } = target.dataset
     const currentDescriptors = foundry.utils.getProperty(this.actor, `${path}.descriptors`) ?? {}
 
     await this._resetDataPoint(path, 'descriptors', {
@@ -180,9 +181,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _addSfx (event) {
+  async _addSfx (event, target = event.currentTarget) {
     event.preventDefault()
-    const { path } = event.currentTarget.dataset
+    const { path } = target.dataset
     const currentSfx = foundry.utils.getProperty(this.actor, `${path}.sfx`) ?? {}
 
     await this._resetDataPoint(path, 'sfx', {
@@ -195,9 +196,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _addSubTrait(event) {
+  async _addSubTrait(event, target = event.currentTarget) {
     event.preventDefault()
-    const { path } = event.currentTarget.dataset
+    const { path } = target.dataset
     const currentSubTraits = foundry.utils.getProperty(this.actor, `${path}.subTraits`) ?? {}
 
     await this._resetDataPoint(path, 'subTraits', {
@@ -213,8 +214,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _addToPool (event) {
-    const { consumable, path, label } = event.currentTarget.dataset
+  async _addToPool (event, target = event.currentTarget) {
+    const { consumable, path, label } = target.dataset
     let value = foundry.utils.getProperty(this.actor, `${path}.value`)
 
     if (consumable) {
@@ -234,8 +235,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     }
   }
 
-  async _addTrait (event) {
-    const { path } = event.currentTarget.dataset
+  async _addTrait (event, target = event.currentTarget) {
+    const { path } = target.dataset
     const currentCustomTraits = foundry.utils.getProperty(this.actor, `${path}.customTraits`) ?? {}
 
     await this._resetDataPoint(path, 'customTraits', {
@@ -317,10 +318,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _newDie (event) {
+  async _newDie (event, actionTarget = event.currentTarget) {
     event.preventDefault()
-    const $targetNewDie = $(event.currentTarget)
-    const target = $targetNewDie.data('target')
+    const { target } = actionTarget.dataset
     const currentDiceData = foundry.utils.getProperty(this.actor, target)
     const currentDice = currentDiceData?.value ?? {}
     const newIndex = getLength(currentDice)
@@ -338,15 +338,13 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _onDieChange (event) {
     event.preventDefault()
-    const $targetNewDie = $(event.currentTarget)
-    const target = $targetNewDie.data('target')
-    const targetKey = $targetNewDie.data('key')
-    const targetValue = $targetNewDie.val()
+    const { target, key: targetKey } = event.currentTarget.dataset
+    const targetValue = event.currentTarget.value
     const currentDiceData = foundry.utils.getProperty(this.actor, target)
 
     console.log(target)
 
-    const newValue = objectMapValues(currentDiceData.value ?? {}, (value, index) => parseInt(index, 10) === targetKey ? targetValue : value)
+    const newValue = objectMapValues(currentDiceData.value ?? {}, (value, index) => parseInt(index, 10) === parseInt(targetKey, 10) ? targetValue : value)
 
     await this._resetDataPoint(target, 'value', newValue)
   }
@@ -355,9 +353,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     event.preventDefault()
 
     if (event.button === 2) {
-      const $target = $(event.currentTarget)
-      const target = $target.data('target')
-      const targetKey = $target.data('key')
+      const { target, key: targetKey } = event.currentTarget.dataset
       const currentDiceData = foundry.utils.getProperty(this.actor, target)
 
       const newValue = objectReindexFilter(currentDiceData.value ?? {}, (_, key) => parseInt(key, 10) !== parseInt(targetKey))
@@ -368,13 +364,20 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _ppNumberChange (event) {
     event.preventDefault()
-    const $field = $(event.currentTarget)
-    const parsedValue = parseInt($field.val(), 10)
+    const parsedValue = parseInt(event.currentTarget.value, 10)
     const currentValue = parseInt(this.actor.pp.value, 10)
     const newValue = parsedValue < 0 ? 0 : parsedValue
     const changeAmount = newValue - currentValue
 
     this.actor.changePpBy(changeAmount, true)
+  }
+
+  async _spendPp () {
+    await this.actor.changePpBy(-1)
+
+    if (game.dice3d) {
+      game.dice3d.show({ throws: [{ dice: [{ result: 1, resultLabel: 1, type: 'dp', vectors: [], options: {} }] }] }, game.user, true)
+    }
   }
 
   async _resetDataPoint(path, target, value) {
@@ -387,8 +390,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _traitSetEdit(event) {
-    const { traitSet } = event.currentTarget.dataset
+  async _traitSetEdit(event, target = event.currentTarget) {
+    const { traitSet } = target.dataset
 
     await this.actor.update({
       ['system.actorType.traitSetEdit']: traitSet

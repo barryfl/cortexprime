@@ -17,6 +17,13 @@
   }
 }
 
+&.application.actor-sheet {
+  .window-content {
+    background: none;
+    padding: 0;
+  }
+}
+
 .dice-picker, .consumable-dice {
   &.window-app {
     .window-content {

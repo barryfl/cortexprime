@@ -44,6 +44,15 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 10;
 }
 
+.application.actor-settings .window-content {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.application.actor-settings .sheet-cpt {
+  min-height: 0;
+}
+
 p {
   margin: 0;
 }

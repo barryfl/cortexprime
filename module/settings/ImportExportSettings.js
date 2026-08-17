@@ -89,7 +89,7 @@ export default class ImportExportSettings extends HandlebarsApplicationMixin(App
        window: {
         title: localizer('AreYouSure')
       },
-      content: `...`,
+      content: `<div>${warning ? '<p class="my-2 pa-2 ba-2-primary">' + warning + '</p>' : ''}<p class="my-2">${localizer('ConfirmImportMessage')}</p></div>`,
       yes: {
         default: false
       },
@@ -100,7 +100,6 @@ export default class ImportExportSettings extends HandlebarsApplicationMixin(App
       modal: true
     })
 
-if (confirmed) {
 
         if (confirmed) {
           await game.settings.set('cortexprime', 'importedSettings', { currentSetting: file.name })

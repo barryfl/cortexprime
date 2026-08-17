@@ -10,9 +10,11 @@ const blankPool = {
   pool: {}
 }
 
-export class UserDicePool extends FormApplication {
-  constructor() {
-    super()
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+
+export class UserDicePool extends HandlebarsApplicationMixin(ApplicationV2) {
+  constructor(options = {}) {
+    super(options)
     let userDicePool = game.user.getFlag('cortexprime', 'dicePool')
 
     if (!userDicePool) {
@@ -22,48 +24,72 @@ export class UserDicePool extends FormApplication {
     this.dicePool = userDicePool
   }
 
-  static get defaultOptions () {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'user-dice-pool',
-      template: 'systems/cortexprime/templates/dice-pool.html',
-      title: localizer('DicePool'),
-      classes: ['cortexprime', 'user-dice-pool'],
+  static DEFAULT_OPTIONS = {
+    id: 'user-dice-pool',
+    tagName: 'form',
+    classes: ['cortexprime', 'user-dice-pool'],
+    actions: {
+      addCustomTrait: function (event, target) { return this._addCustomTraitToPool(event, target) },
+      clearPool: function (event, target) { return this._clearDicePool(event, target) },
+      clearSource: function (event, target) { return this._clearSource(event, target) },
+      newDie: function (event, target) { return this._onNewDie(event, target) },
+      removePoolTrait: function (event, target) { return this._removePoolTrait(event, target) },
+      resetCustomTrait: function (event, target) { return this._resetCustomPoolTrait(event, target) },
+      rollPool: function (event, target) { return this._rollDicePool(event, target) }
+    },
+    form: {
+      closeOnSubmit: false,
+      handler: function () { return this._saveForm() }
+    },
+    position: {
       width: 600,
       height: 'auto',
       top: 500,
-      left: 20,
-      resizable: true,
-      closeOnSubmit: false,
-      submitOnClose: true,
-      submitOnChange: true
-    })
+      left: 20
+    },
+    window: {
+      resizable: true
+    }
   }
 
-  async getData () {
+  static PARTS = {
+    pool: {
+      template: 'systems/cortexprime/templates/dice-pool.html'
+    }
+  }
+
+  get title () {
+    return localizer('DicePool')
+  }
+
+  async _prepareContext (options) {
+    const context = await super._prepareContext(options)
     const dice = game.user.getFlag('cortexprime', 'dicePool')
     const themes = game.settings.get('cortexprime', 'themes')
     const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
-    return { ...dice, theme }
+    return { ...context, ...dice, theme }
   }
 
-  async _updateObject (event, formData) {
+  async _saveForm () {
+    const form = this.element.matches('form') ? this.element : this.element.querySelector('form')
+    if (!form) return
+
     const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const formData = Object.fromEntries(new FormData(form).entries())
     const newDice = foundry.utils.mergeObject(currentDice, foundry.utils.expandObject(formData))
 
     await game.user.setFlag('cortexprime', 'dicePool', newDice)
   }
 
-  activateListeners (html) {
-    html.find('.add-trait-to-pool').click(this._addCustomTraitToPool.bind(this))
-    html.find('.clear-dice-pool').click(this._clearDicePool.bind(this))
-    html.find('.new-die').click(this._onNewDie.bind(this))
-    html.find('.custom-dice-label').change(this.submit.bind(this))
-    html.find('.die-select').change(this._onDieChange.bind(this))
-    html.find('.die-select').on('mouseup', this._onDieRemove.bind(this))
-    html.find('.remove-pool-trait').click(this._removePoolTrait.bind(this))
-    html.find('.reset-custom-pool-trait').click(this._resetCustomPoolTrait.bind(this))
-    html.find('.roll-dice-pool').click(this._rollDicePool.bind(this))
-    html.find('.clear-source').click(this._clearSource.bind(this))
+  async _onRender (context, options) {
+    await super._onRender(context, options)
+
+    this.element.querySelector('.custom-dice-label')?.addEventListener('change', () => this._saveForm())
+
+    for (const select of this.element.querySelectorAll('.die-select')) {
+      select.addEventListener('change', event => this._onDieChange(event))
+      select.addEventListener('mouseup', event => this._onDieRemove(event))
+    }
   }
 
   async initPool () {
@@ -88,7 +114,7 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
   async _addTraitToPool (source, label, value) {
@@ -100,7 +126,7 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
   async _clearDicePool (event) {
@@ -110,12 +136,12 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', blankPool)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
-  async _clearSource (event) {
+  async _clearSource (event, actionTarget = event.currentTarget) {
     event.preventDefault()
-    const { source } = event.currentTarget.dataset
+    const { source } = actionTarget.dataset
     const currentDice = game.user.getFlag('cortexprime', 'dicePool')
 
     await game.user.setFlag('cortexprime', 'dicePool', null)
@@ -124,19 +150,17 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
   async _onDieChange (event) {
     event.preventDefault()
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
-    const $targetDieSelect = $(event.currentTarget)
-    const target = $targetDieSelect.data('target')
-    const targetKey = $targetDieSelect.data('key')
-    const targetValue = $targetDieSelect.val()
-    const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
+    await this._saveForm()
 
-    await this.submit()
+    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const { target, key: targetKey } = event.currentTarget.dataset
+    const targetValue = event.currentTarget.value
+    const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
 
     await game.user.setFlag('cortexprime', 'dicePool', null)
 
@@ -144,20 +168,18 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
   async _onDieRemove (event) {
     event.preventDefault()
 
     if (event.button === 2) {
-      const currentDice = game.user.getFlag('cortexprime', 'dicePool')
-      const $targetDieSelect = $(event.currentTarget)
-      const target = $targetDieSelect.data('target')
-      const targetKey = $targetDieSelect.data('key')
-      const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
+      await this._saveForm()
 
-      await this.submit()
+      const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+      const { target, key: targetKey } = event.currentTarget.dataset
+      const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
 
       await game.user.setFlag('cortexprime', 'dicePool', null)
 
@@ -165,15 +187,14 @@ export class UserDicePool extends FormApplication {
 
       await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-      await this.render(true)
+      await this.render({ force: true })
     }
   }
 
-  async _onNewDie (event) {
+  async _onNewDie (event, actionTarget = event.currentTarget) {
     event.preventDefault()
     const currentDice = game.user.getFlag('cortexprime', 'dicePool')
-    const $targetNewDie = $(event.currentTarget)
-    const target = $targetNewDie.data('target')
+    const { target } = actionTarget.dataset
     const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
     const currentLength = getLength(dataTargetValue)
     const lastValue = dataTargetValue[currentLength - 1] || '8'
@@ -184,26 +205,25 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
-  async _removePoolTrait (event) {
+  async _removePoolTrait (event, actionTarget = event.currentTarget) {
     event.preventDefault()
-    const $target = $(event.currentTarget)
-    const source = $target.data('source')
+    const { source, key } = actionTarget.dataset
     let currentDicePool = game.user.getFlag('cortexprime', 'dicePool')
 
     if (getLength(currentDicePool.pool[source] || {}) < 2) {
       delete currentDicePool.pool[source]
     } else {
-      delete currentDicePool.pool[source][$target.data('key')]
-      currentDicePool.pool[source] = objectReindexFilter(currentDicePool.pool[source], (_, index) => parseInt(index, 10) !== parseInt($target.data('key'), 10))
+      delete currentDicePool.pool[source][key]
+      currentDicePool.pool[source] = objectReindexFilter(currentDicePool.pool[source], (_, index) => parseInt(index, 10) !== parseInt(key, 10))
     }
 
     await game.user.setFlag('cortexprime', 'dicePool', null)
     await game.user.setFlag('cortexprime', 'dicePool', currentDicePool)
 
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _resetCustomPoolTrait (event) {
@@ -220,7 +240,7 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
   async _setPool (pool) {
@@ -232,31 +252,30 @@ export class UserDicePool extends FormApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
-  async _rollDicePool (event) {
+  async _rollDicePool (event, actionTarget = event.currentTarget) {
     event.preventDefault()
-    const $target = $(event.currentTarget)
+    const { rollType = 'select' } = actionTarget.dataset
 
     const currentDicePool = game.user.getFlag('cortexprime', 'dicePool')
 
     const dicePool = currentDicePool.pool
 
-    const rollType = $target.hasClass('roll-for-total')
-      ? 'total'
-      : $target.hasClass('roll-for-effect')
-        ? 'effect'
-        : 'select'
-
     await rollDice.call(this, dicePool, rollType)
+  }
+
+  async close (options) {
+    if (this.rendered) await this._saveForm()
+    return super.close(options)
   }
 
   async toggle () {
     if (!this.rendered) {
-      await this.render(true)
+      await this.render({ force: true })
     } else {
-      this.close()
+      await this.close()
     }
   }
 }

@@ -1,4 +1,4 @@
-<form class="{{cssClass}} sheet-cpt" autocomplete="off">
+<div class="{{cssClass}} sheet-cpt">
   <div class="sheet-background"></div>
   <div class="sheet-image"></div>
   <div class="sheet-content pa-2">
@@ -26,12 +26,12 @@
               </div>
             </div>
             <div class="flex-col pr-1">
-              <button class="reset-custom-pool-trait btn btn-secondary-cpt btn-icon" type="button">
+              <button class="reset-custom-pool-trait btn btn-secondary-cpt btn-icon" data-action="resetCustomTrait" type="button">
                 <i class="fa fa-undo"></i>
               </button>
             </div>
             <div class="flex-col pl-0">
-              <button class="add-trait-to-pool btn btn-primary-cpt btn-icon" data-label="{{customAdd.label}}"
+              <button class="add-trait-to-pool btn btn-primary-cpt btn-icon" data-action="addCustomTrait" data-label="{{customAdd.label}}"
                 data-trait-target="customAdd" type="button">
                 <i class="fa fa-plus"></i>
               </button>
@@ -46,7 +46,7 @@
               <div class="flex flex-ac flex-jsb py-1">
                 <span class="trait-title-cpt flex-col">{{sourceName}}</span>
                 <div class="flex-col">
-                  <button class="btn btn-secondary-cpt clear-source" data-source="{{sourceName}}" type="button">
+                  <button class="btn btn-secondary-cpt clear-source" data-action="clearSource" data-source="{{sourceName}}" type="button">
                     {{localize 'Clear'}}
                   </button>
                 </div>
@@ -70,6 +70,7 @@
                       <div class="flex-col">
                         <button
                           class="remove-pool-trait btn btn-icon btn-secondary-cpt btn-small"
+                          data-action="removePoolTrait"
                           data-source="{{sourceName}}"
                           data-key="{{traitKey}}"
                           type="button"
@@ -94,16 +95,16 @@
           <div class="section-background"></div>
           <div class="flex-col col-12 flex flex-je py-2">
             <div class="flex-col">
-              <button class="clear-dice-pool btn btn-secondary-cpt" type="button">{{localize 'Clear'}}</button>
+              <button class="clear-dice-pool btn btn-secondary-cpt" data-action="clearPool" type="button">{{localize 'Clear'}}</button>
             </div>
             <div class="flex-col pl-0">
-              <button class="roll-dice-pool btn btn-primary-cpt" type="button">{{localize 'RollAndSelect'}}</button>
+              <button class="roll-dice-pool btn btn-primary-cpt" data-action="rollPool" data-roll-type="select" type="button">{{localize 'RollAndSelect'}}</button>
             </div>
             <div class="flex-col pl-0">
-              <button class="roll-dice-pool roll-for-effect btn btn-primary-cpt" type="button">{{localize 'RollForEffect'}}</button>
+              <button class="roll-dice-pool roll-for-effect btn btn-primary-cpt" data-action="rollPool" data-roll-type="effect" type="button">{{localize 'RollForEffect'}}</button>
             </div>
             <div class="flex-col pl-0">
-              <button class="roll-dice-pool roll-for-total btn btn-primary-cpt" type="button">{{localize 'RollForTotal'}}</button>
+              <button class="roll-dice-pool roll-for-total btn btn-primary-cpt" data-action="rollPool" data-roll-type="total" type="button">{{localize 'RollForTotal'}}</button>
             </div>
           </div>
         </div>
@@ -112,4 +113,4 @@
       </div>
     </div>
   </div>
-</form>
+</div>

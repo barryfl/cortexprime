@@ -85,15 +85,22 @@ export default class ImportExportSettings extends HandlebarsApplicationMixin(App
           warning = localizer('ImportVersionWarning')
         }
 
-        let confirmed
+       const confirmed = await foundry.applications.api.DialogV2.confirm({
+       window: {
+        title: localizer('AreYouSure')
+      },
+      content: `...`,
+      yes: {
+        default: false
+      },
+      no: {
+        default: true
+      },
+      rejectClose: false,
+      modal: true
+    })
 
-        await Dialog.confirm({
-          title: localizer('AreYouSure'),
-          content: `<div>${warning ? '<p class="my-2 pa-2 ba-2-primary">' + warning + '</p>' : ''}<p class="my-2">${localizer('ConfirmImportMessage')}</p></div>`,
-          yes: () => { confirmed = true },
-          no: () => { confirmed = false },
-          defaultYes: false
-        })
+if (confirmed) {
 
         if (confirmed) {
           await game.settings.set('cortexprime', 'importedSettings', { currentSetting: file.name })

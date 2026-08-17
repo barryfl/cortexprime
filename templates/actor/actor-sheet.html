@@ -32,10 +32,11 @@
             <a class="item tab-cpt {{tabs.traits.cssClass}}{{ternary (eq theme.tabStyle 'rounded') ' tab-rounded-cpt' ''}}" data-group="primary" data-tab="traits">{{localize 'Traits'}}</a>
             {{#if data.system.actorType.hasNotesPage}}
               <a class="item tab-cpt {{tabs.notes.cssClass}}{{ternary (eq theme.tabStyle 'rounded') ' tab-rounded-cpt' ''}}" data-group="primary" data-tab="notes">{{localize 'Notes'}}</a>
-            {{/if}}
-            <a class="item tab-cpt{{ternary (eq theme.tabStyle 'rounded') ' tab-rounded-cpt' ''}}" href="systems/cortexprime/templates/help/index.html">{{localize 'Help'}}</a>
-          </nav>
-        </div>
+             <button type="button" data-action="openHelp">
+               {{localize 'Help'}}
+             </button>
+           </nav>
+          </div>
         <div class="sheet-body">
           <article class="tab sets {{tabs.traits.cssClass}}" data-group="primary" data-tab="traits">
             <div class="flex-row">

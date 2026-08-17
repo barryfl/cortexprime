@@ -3,6 +3,7 @@
  * @extends {foundry.applications.sheets.ActorSheetV2}
  */
 import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objectSome } from '../../lib/helpers.js'
+import { CortexPrimeHelp } from '../module/apps/CortexPrimeHelp.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
   removeItems,
@@ -41,7 +42,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       toggleItem: function (event, target) { return toggleItems.call(this, event, target) },
       traitSetEdit: function (event, target) { return this._traitSetEdit(event, target) },
       updateActorSettings: function (event) { return this._updateActorSettings(event) },
-      editProfileImage: function (event, target) {return this._editProfileImage(event, target)}
+      editProfileImage: function (event, target) {return this._editProfileImage(event, target)},
+      openHelp: function () {new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)}
     },
     form: {
       closeOnSubmit: false,

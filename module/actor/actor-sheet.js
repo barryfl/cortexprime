@@ -3,7 +3,7 @@
  * @extends {foundry.applications.sheets.ActorSheetV2}
  */
 import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objectSome } from '../../lib/helpers.js'
-import { CortexPrimeHelp } from '../module/apps/CortexPrimeHelp.js'
+import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
   removeItems,

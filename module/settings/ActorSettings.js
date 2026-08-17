@@ -1,5 +1,5 @@
 import { localizer } from '../scripts/foundryHelpers.js'
-import { CortexPrimeHelp } from '../module/apps/CortexPrimeHelp.js'
+import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 

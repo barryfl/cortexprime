@@ -307,15 +307,8 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     })
   }
 
-    async _changeDefaultImage (event) {
-    event.preventDefault()
-    await this._saveCurrentForm()
-    const { actorTypeIndex } = event.currentTarget.dataset
-    const source = game.settings.get('cortexprime', 'actorTypes')
-    const currentImage = source[actorTypeIndex]?.defaultImage || 'icons/svg/mystery-man.svg'
-    const _this = this
 
-async _changeDefaultImage (event) {
+  async _changeDefaultImage (event) {
   event.preventDefault()
 
   const { actorTypeIndex } = event.currentTarget.dataset

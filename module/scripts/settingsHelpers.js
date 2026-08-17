@@ -1,40 +1,36 @@
 import { getLength, objectMapKeys, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { localizer } from './foundryHelpers.js'
 
-export const collapseToggle = function (html) {
-  html.find('.collapse-toggle').click(async (event) => {
+export const collapseToggle = function (element) {
+  element.querySelectorAll('.collapse-toggle').forEach(toggle => toggle.addEventListener('click', async event => {
     event.preventDefault()
-    const $element = $(event.currentTarget)
-    const $collapseValue = $element
-      .next('.collapse-value')
+    const collapseValue = event.currentTarget.nextElementSibling
 
-    $collapseValue.prop('checked', !($collapseValue.is(':checked')))
-
-    await this._onSubmit(event)
-    this.render(true)
-  })
-}
-
-export const displayToggle = html => {
-  html.find('input.display-toggle').change((event) => {
-    event.preventDefault()
-    const $target = $(event.currentTarget)
-    const scope = $target.data('scope')
-    const selector = $target.data('selector')
-
-    if (scope) {
-      $(event.currentTarget)
-        .closest(scope)
-        .find(selector)
-        .toggle()
-    } else {
-      html.find(selector).toggle()
+    if (collapseValue?.classList.contains('collapse-value')) {
+      collapseValue.checked = !collapseValue.checked
     }
-  })
+
+    await this._saveForm({ render: false })
+    await this.render({ force: true })
+  }))
 }
 
-export const removeItem = async function (html) {
-  html.find('.remove-item').click(async event => {
+export const displayToggle = element => {
+  element.querySelectorAll('input.display-toggle').forEach(toggle => toggle.addEventListener('change', event => {
+    event.preventDefault()
+    const { scope, selector } = event.currentTarget.dataset
+    const targetElements = scope
+      ? event.currentTarget.closest(scope)?.querySelectorAll(selector) ?? []
+      : element.querySelectorAll(selector)
+
+    for (const targetElement of targetElements) {
+      targetElement.hidden = !targetElement.hidden
+    }
+  }))
+}
+
+export const removeItem = function (element) {
+  element.querySelectorAll('.remove-item').forEach(removeButton => removeButton.addEventListener('click', async event => {
     event.preventDefault()
     const {
       group,
@@ -85,14 +81,14 @@ export const removeItem = async function (html) {
           await game.settings.set('cortexprime', 'actorBreadcrumbs', breadcrumbsValue)
         }
 
-        this.render(true)
+        await this.render({ force: true })
       }
     }
-  })
+  }))
 }
 
-export const reorderItem = async function (html) {
-  html.find('.reorder').click(async event => {
+export const reorderItem = function (element) {
+  element.querySelectorAll('.reorder').forEach(reorderButton => reorderButton.addEventListener('click', async event => {
     event.preventDefault()
     const {
       currentIndex,
@@ -130,6 +126,6 @@ export const reorderItem = async function (html) {
     }
 
     await game.settings.set('cortexprime', setting, settings)
-    this.render(true)
-  })
+    await this.render({ force: true })
+  }))
 }

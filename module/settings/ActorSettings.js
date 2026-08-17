@@ -2,68 +2,104 @@ import { localizer } from '../scripts/foundryHelpers.js'
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 
-export default class ActorSettings extends FormApplication {
-  constructor() {
-    super()
-  }
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
-  static get defaultOptions () {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'actor-settings',
-      template: 'systems/cortexprime/templates/actor/settings.html',
-      title: localizer('ActorSettings'),
-      classes: ['cortexprime', 'actor-settings'],
+export default class ActorSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: 'actor-settings',
+    tagName: 'form',
+    classes: ['cortexprime', 'actor-settings'],
+    form: {
+      closeOnSubmit: false,
+      handler: function () { return this._saveForm() }
+    },
+    position: {
       width: 600,
       height: 900,
       top: 200,
-      left: 400,
-      resizable: true,
-      closeOnSubmit: false,
-      submitOnClose: true,
-      submitOnChange: true
-    })
+      left: 400
+    },
+    window: { resizable: true }
   }
 
-  getData() {
+  static PARTS = {
+    settings: { template: 'systems/cortexprime/templates/actor/settings.html' }
+  }
+
+  get title () {
+    return localizer('ActorSettings')
+  }
+
+  async _prepareContext (options) {
+    const context = await super._prepareContext(options)
     const breadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs') ?? {}
 
     return {
+      ...context,
       actorTypes: game.settings.get('cortexprime', 'actorTypes'),
       breadcrumbs,
       goBack: breadcrumbs[getLength(breadcrumbs ?? {}) - 2]?.target ?? 0
     }
   }
 
-  async _updateObject(event, formData) {
-    if (!$(event.currentTarget).hasClass('die-select')) {
-      const expandedFormData = foundry.utils.expandObject(formData)
-      const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
-
-      await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(currentActorTypes, expandedFormData.actorTypes))
-
-      this.render(true)
+  _getFormData () {
+    const formData = new FormData(this.element)
+    const data = Object.fromEntries(formData.entries())
+    for (const checkbox of this.element.querySelectorAll('input[type="checkbox"][name]')) {
+      data[checkbox.name] = checkbox.checked
     }
+    for (const numberInput of this.element.querySelectorAll('input[type="number"][name]')) {
+      data[numberInput.name] = numberInput.valueAsNumber
+    }
+    return data
   }
 
-  activateListeners(html) {
-    super.activateListeners(html)
-    html.find('#add-new-actor-type').click(this._addNewActorType.bind(this))
-    html.find('.add-descriptor').click(this._addDescriptor.bind(this))
-    html.find('.add-simple-trait').click(this._addSimpleTrait.bind(this))
-    html.find('.add-sfx').click(this._addSfx.bind(this))
-    html.find('.add-sub-trait').click(this._addSubTrait.bind(this))
-    html.find('.add-trait').click(this._addTrait.bind(this))
-    html.find('.add-trait-set').click(this._addTraitSet.bind(this))
-    html.find('.breadcrumb-name-change').change(this._breadcrumbNameChange.bind(this))
-    html.find('.breadcrumb:not(.active), .go-back').click(this._breadcrumbChange.bind(this))
-    html.find('.default-image').click(this._changeDefaultImage.bind(this))
-    html.find('.die-select').change(this._onDieChange.bind(this))
-    html.find('.die-select').on('mouseup', this._onDieRemove.bind(this))
-    html.find('.duplicate-item').click(this._duplicateItem.bind(this))
-    html.find('.new-die').click(this._newDie.bind(this))
-    html.find('.view-change').click(this._viewChange.bind(this))
-    removeItem.call(this, html)
-    reorderItem.call(this, html)
+  async _saveForm ({ render = true } = {}) {
+    if (!this.rendered) return
+    const expandedFormData = foundry.utils.expandObject(this._getFormData())
+    const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
+
+    await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(currentActorTypes, expandedFormData.actorTypes ?? {}))
+
+    if (render) await this.render({ force: true })
+  }
+
+  async _onRender (context, options) {
+    await super._onRender(context, options)
+
+    const clickHandlers = {
+      '#add-new-actor-type': this._addNewActorType,
+      '.add-descriptor': this._addDescriptor,
+      '.add-simple-trait': this._addSimpleTrait,
+      '.add-sfx': this._addSfx,
+      '.add-sub-trait': this._addSubTrait,
+      '.add-trait': this._addTrait,
+      '.add-trait-set': this._addTraitSet,
+      '.breadcrumb:not(.active), .go-back': this._breadcrumbChange,
+      '.default-image': this._changeDefaultImage,
+      '.duplicate-item': this._duplicateItem,
+      '.new-die': this._newDie,
+      '.view-change': this._viewChange
+    }
+
+    for (const [selector, handler] of Object.entries(clickHandlers)) {
+      this.element.querySelectorAll(selector).forEach(element => {
+        element.addEventListener('click', event => handler.call(this, event))
+      })
+    }
+
+    this.element.addEventListener('change', async event => {
+      if (event.target.classList.contains('die-select')) return this._onDieChange(event)
+      if (event.target.classList.contains('breadcrumb-name-change')) await this._breadcrumbNameChange(event)
+      await this._saveForm()
+    })
+
+    this.element.querySelectorAll('.die-select').forEach(element => {
+      element.addEventListener('mouseup', event => this._onDieRemove(event))
+    })
+
+    removeItem.call(this, this.element)
+    reorderItem.call(this, this.element)
   }
 
   async _addNewActorType(event) {
@@ -82,13 +118,12 @@ export default class ActorSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newActorType))
     await this.changeView(localizer('NewActorType'), `actorType-${newKey}`)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _addDescriptor(event) {
     event.preventDefault()
-    const $addButton = $(event.currentTarget)
-    const path = $addButton.data('path')
+    const { path } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentDescriptors = foundry.utils.getProperty(source, path) || {}
 
@@ -102,13 +137,12 @@ export default class ActorSettings extends FormApplication {
       })
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _addSfx(event) {
     event.preventDefault()
-    const $addButton = $(event.currentTarget)
-    const path = $addButton.data('path')
+    const { path } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentSfx = foundry.utils.getProperty(source, path) || {}
 
@@ -123,13 +157,12 @@ export default class ActorSettings extends FormApplication {
       })
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _addSubTrait(event) {
     event.preventDefault()
-    const $addButton = $(event.currentTarget)
-    const path = $addButton.data('path')
+    const { path } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentSubTraits = foundry.utils.getProperty(source, path) || {}
 
@@ -144,13 +177,13 @@ export default class ActorSettings extends FormApplication {
       })
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _addSimpleTrait (event) {
     event.preventDefault()
     const source = game.settings.get('cortexprime', 'actorTypes')
-    const actorTypeKey = $(event.currentTarget).data('actorType')
+    const { actorType: actorTypeKey } = event.currentTarget.dataset
     const newKey = getLength(source[actorTypeKey]?.simpleTraits || {})
 
     const newSimpleTrait = {
@@ -175,7 +208,7 @@ export default class ActorSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newSimpleTrait))
     await this.changeView(localizer('NewSimpleTrait'), `simpleTrait-${actorTypeKey}-${newKey}`)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _addTrait (event) {
@@ -202,13 +235,13 @@ export default class ActorSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', source)
     await this.changeView(localizer('NewTrait'), `trait-${actorType}-${traitSet}-${newKey}`)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _addTraitSet (event) {
     event.preventDefault()
     const source = game.settings.get('cortexprime', 'actorTypes')
-    const actorTypeKey = $(event.currentTarget).data('actorType')
+    const { actorType: actorTypeKey } = event.currentTarget.dataset
     const newKey = getLength(source[actorTypeKey]?.traitSets || {})
 
     const newTraitSet = {
@@ -224,13 +257,13 @@ export default class ActorSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newTraitSet))
     await this.changeView(localizer('NewTraitSet'), `traitSet-${actorTypeKey}-${newKey}`)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _breadcrumbChange (event) {
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
-    const target = $(event.currentTarget).data('to')
+    const { to: target } = event.currentTarget.dataset
 
     const targetKey = +objectFindKey(currentBreadcrumbs, breadcrumb => breadcrumb.target === target)
 
@@ -247,19 +280,18 @@ export default class ActorSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'actorBreadcrumbs', value)
 
-    await this._onSubmit(event)
-    this.render(true)
+    await this._saveForm({ render: false })
+    await this.render({ force: true })
   }
 
   async _breadcrumbNameChange (event) {
-    const $nameField = $(event.currentTarget)
-    const target = $nameField.data('target')
+    const { target } = event.target.dataset
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
     await game.settings.set('cortexprime', 'actorBreadcrumbs', {
       ...objectMapValues(currentBreadcrumbs, breadcrumb => {
         if (breadcrumb.target === target) {
-          breadcrumb.name = $nameField.val()
+          breadcrumb.name = event.target.value
         }
 
         return breadcrumb
@@ -282,7 +314,7 @@ export default class ActorSettings extends FormApplication {
 
         await game.settings.set('cortexprime', 'actorTypes', source)
 
-        _this.render()
+        await _this.render({ force: true })
       }
     })
 
@@ -305,7 +337,7 @@ export default class ActorSettings extends FormApplication {
       }
     })
 
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _duplicateItem (event) {
@@ -331,7 +363,7 @@ export default class ActorSettings extends FormApplication {
     }
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _newDie (event) {
@@ -345,16 +377,14 @@ export default class ActorSettings extends FormApplication {
 
     foundry.utils.setProperty(source, `${path}.value`, { ...values, [newKey]: newValue })
     await game.settings.set('cortexprime', 'actorTypes', source)
-    this.render(true)
+    await this.render({ force: true })
   }
 
   async _onDieChange (event) {
     event.preventDefault()
     const source = game.settings.get('cortexprime', 'actorTypes')
-    const $dieSelect = $(event.currentTarget)
-    const target = $dieSelect.data('target')
-    const targetKey = $dieSelect.data('key')
-    const targetValue = $dieSelect.val()
+    const { target, key: targetKey } = event.target.dataset
+    const targetValue = event.target.value
     const currentDiceValues = foundry.utils.getProperty(source, `${target}.value`) ?? {}
 
     if (parseInt(targetValue, 10) === 0) {
@@ -365,7 +395,7 @@ export default class ActorSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', source)
 
-    await this.render(true)
+    await this.render({ force: true })
   }
 
   async _onDieRemove (event) {
@@ -373,36 +403,33 @@ export default class ActorSettings extends FormApplication {
 
     if (event.button === 2) {
       const source = game.settings.get('cortexprime', 'actorTypes')
-      const $dieSelect = $(event.currentTarget)
-      const target = $dieSelect.data('target')
-      const targetKey = $dieSelect.data('key')
+      const { target, key: targetKey } = event.currentTarget.dataset
       const currentDiceValues = foundry.utils.getProperty(source, `${target}.value`) ?? {}
 
       foundry.utils.setProperty(source, `${target}.value`, objectReindexFilter(currentDiceValues, (_, index) => parseInt(index, 10) !== parseInt(targetKey, 10)))
 
       await game.settings.set('cortexprime', 'actorTypes', source)
 
-      await this.render(true)
+      await this.render({ force: true })
     }
   }
 
   async _viewChange (event) {
     event.preventDefault()
-    this.changeView($(event.currentTarget).data('name'), $(event.currentTarget).data('to'))
+    const { name, to } = event.currentTarget.dataset
+    await this.changeView(name, to)
   }
-}
 
-Hooks.on('closeActorSettings', async () => {
-  await game.settings.set(
-    'cortexprime',
-    'actorBreadcrumbs',
-    {
+  async close (options) {
+    if (this.rendered) await this._saveForm({ render: false })
+    await game.settings.set('cortexprime', 'actorBreadcrumbs', {
       0: {
         active: true,
         name: 'ActorTypes',
         target: 'actorTypes',
         localize: true
       }
-    }
-  )
-})
+    })
+    return super.close(options)
+  }
+}

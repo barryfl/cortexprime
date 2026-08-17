@@ -1,38 +1,60 @@
 import { localizer, setCssVars } from '../scripts/foundryHelpers.js'
 import defaultThemes from '../theme/defaultThemes.js'
 
-export default class ThemeSettings extends FormApplication {
-  constructor() {
-    super()
-  }
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
-  static get defaultOptions () {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'theme-settings',
-      template: 'systems/cortexprime/templates/theme/settings.html',
-      title: localizer('ThemeSettings'),
-      classes: ['cortexprime', 'theme-settings'],
+export default class ThemeSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: 'theme-settings',
+    tagName: 'form',
+    classes: ['cortexprime', 'theme-settings'],
+    form: {
+      closeOnSubmit: false,
+      handler: function () { return this._saveForm() }
+    },
+    position: {
       width: 960,
       height: 900,
       top: 200,
-      left: 400,
-      resizable: true,
-      closeOnSubmit: false,
-      submitOnClose: true,
-      submitOnChange: true
-    })
+      left: 400
+    },
+    window: { resizable: true }
   }
 
-  getData() {
+  static PARTS = {
+    settings: { template: 'systems/cortexprime/templates/theme/settings.html' }
+  }
+
+  get title () {
+    return localizer('ThemeSettings')
+  }
+
+  async _prepareContext (options) {
+    const context = await super._prepareContext(options)
     const themes = game.settings.get('cortexprime', 'themes')
 
     return {
+      ...context,
       themes,
       defaultVersion: defaultThemes.version
     }
   }
 
-  async _updateObject(event, formData) {
+  _getFormData () {
+    const formData = new FormData(this.element)
+    const data = Object.fromEntries(formData.entries())
+    for (const checkbox of this.element.querySelectorAll('input[type="checkbox"][name]')) {
+      data[checkbox.name] = checkbox.checked
+    }
+    for (const numberInput of this.element.querySelectorAll('input[type="number"][name]')) {
+      data[numberInput.name] = numberInput.valueAsNumber
+    }
+    return data
+  }
+
+  async _saveForm ({ render = true } = {}) {
+    if (!this.rendered) return
+    const formData = this._getFormData()
     const expandedFormData = foundry.utils.expandObject(formData)
     const currentThemes = game.settings.get('cortexprime', 'themes') ?? {}
 
@@ -49,16 +71,17 @@ export default class ThemeSettings extends FormApplication {
 
     setCssVars(theme)
 
-    this.render(true)
+    if (render) await this.render({ force: true })
   }
 
-  activateListeners(html) {
-    super.activateListeners(html)
-    html.find('.image-picker').click(this._changeImage.bind(this))
-    html.find('.image-remove').click(this._removeImage.bind(this))
-    html.find('.refresh-preset').click(this._refreshPreset.bind(this))
-    html.find('.save-as-custom-preset').click(this._saveAsCustomPreset.bind(this))
-    html.find('.update-presets').click(this._updatePresets.bind(this))
+  async _onRender (context, options) {
+    await super._onRender(context, options)
+    this.element.addEventListener('change', () => this._saveForm())
+    this.element.querySelectorAll('.image-picker').forEach(element => element.addEventListener('click', event => this._changeImage(event)))
+    this.element.querySelectorAll('.image-remove').forEach(element => element.addEventListener('click', event => this._removeImage(event)))
+    this.element.querySelector('.refresh-preset')?.addEventListener('click', event => this._refreshPreset(event))
+    this.element.querySelector('.save-as-custom-preset')?.addEventListener('click', event => this._saveAsCustomPreset(event))
+    this.element.querySelector('.update-presets')?.addEventListener('click', event => this._updatePresets(event))
   }
 
   async _changeImage (event) {
@@ -76,7 +99,7 @@ export default class ThemeSettings extends FormApplication {
 
         await game.settings.set('cortexprime', 'themes', source)
 
-        _this.render()
+        await _this.render({ force: true })
       }
     })
 
@@ -91,7 +114,7 @@ export default class ThemeSettings extends FormApplication {
 
     await game.settings.set('cortexprime', 'themes', source)
 
-    this.render()
+    await this.render({ force: true })
   }
 
   async _refreshPreset (event) {
@@ -108,7 +131,7 @@ export default class ThemeSettings extends FormApplication {
 
     setCssVars(theme)
 
-    this.render()
+    await this.render({ force: true })
   }
 
   async _saveAsCustomPreset (event) {
@@ -124,7 +147,7 @@ export default class ThemeSettings extends FormApplication {
 
     setCssVars(theme)
 
-    this.render()
+    await this.render({ force: true })
   }
 
   async _updatePresets (event) {
@@ -147,6 +170,11 @@ export default class ThemeSettings extends FormApplication {
 
     setCssVars(theme)
 
-    this.render()
+    await this.render({ force: true })
+  }
+
+  async close (options) {
+    if (this.rendered) await this._saveForm({ render: false })
+    return super.close(options)
   }
 }

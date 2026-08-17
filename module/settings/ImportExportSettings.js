@@ -1,40 +1,44 @@
 import defaultActorTypes from "../actor/defaultActorTypes.js"
 import { localizer, setCssVars } from "../scripts/foundryHelpers.js"
 
-export default class ImportExportSettings extends FormApplication {
-  constructor() {
-    super()
-  }
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'import-export-settings',
-      template: 'systems/cortexprime/templates/import-export-settings.html',
-      title: localizer('ImportExportSettings'),
-      classes: ['cortexprime', 'import-export-settings'],
+export default class ImportExportSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: 'import-export-settings',
+    tagName: 'form',
+    classes: ['cortexprime', 'import-export-settings'],
+    form: {
+      closeOnSubmit: false,
+      handler: function () {}
+    },
+    position: {
       width: 'auto',
       height: 'auto',
       top: 200,
-      left: 400,
-      resizable: true,
-      closeOnSubmit: false,
-      submitOnClose: true,
-      submitOnChange: true
-    })
+      left: 400
+    },
+    window: { resizable: true }
   }
 
-  getData() {
-    return game.settings.get('cortexprime', 'importedSettings')
+  static PARTS = {
+    settings: { template: 'systems/cortexprime/templates/import-export-settings.html' }
   }
 
-  async _updateObject(event, formData) {
+  get title () {
+    return localizer('ImportExportSettings')
   }
 
-  activateListeners(html) {
-    super.activateListeners(html)
-    html.find('.export-settings').click(this._exportSettings.bind(this))
-    html.find('.import-settings').change(this._importSettings.bind(this))
-    html.find('.reset-settings').click(this._resetSettings.bind(this))
+  async _prepareContext (options) {
+    const context = await super._prepareContext(options)
+    return { ...context, ...game.settings.get('cortexprime', 'importedSettings') }
+  }
+
+  async _onRender (context, options) {
+    await super._onRender(context, options)
+    this.element.querySelector('.export-settings')?.addEventListener('click', event => this._exportSettings(event))
+    this.element.querySelector('.import-settings')?.addEventListener('change', event => this._importSettings(event))
+    this.element.querySelector('.reset-settings')?.addEventListener('click', event => this._resetSettings(event))
   }
 
   async _exportSettings(event) {
@@ -53,7 +57,7 @@ export default class ImportExportSettings extends FormApplication {
 
   async _importSettings(event) {
     event.preventDefault()
-    const file = $(event.currentTarget).prop('files')[0]
+    const file = event.currentTarget.files?.[0]
 
     if (file) {
       const fileReader = new FileReader()
@@ -108,7 +112,7 @@ export default class ImportExportSettings extends FormApplication {
 
           ui.notifications.info(localizer('ImportSuccessMessage'))
 
-          this.render(true)
+          await this.render({ force: true })
         }
       }
 
@@ -134,7 +138,7 @@ export default class ImportExportSettings extends FormApplication {
       await game.settings.set('cortexprime', 'actorTypes', defaultActorTypes)
       ui.notifications.info(localizer('ResetSuccessMessage'))
 
-      this.render(true)
+      await this.render({ force: true })
     }
   }
 }

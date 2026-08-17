@@ -4,7 +4,6 @@
     <div class="section-content">
       <div class="relative-section pa-2">
         <div class="section-background"></div>
-        <button class="btn btn-primary-cpt {{ternary (eq theme.buttonStyle 'square') 'btn-square-cpt ' ''}}update-actor-settings" data-action="updateActorSettings" type="button">{{localize 'UpdateSettings'}}</button>
         <p class="my-1"><b class="descriptor-label-cpt">{{localize 'ActorType'}}</b> {{actorType.name}}</p>
         {{#if actorType.showProfileImage}}
           <img class="profile-image bkg-light-grey" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />

@@ -7,7 +7,7 @@ export default () => {
     const typeSelect = element.querySelector('select[name="type"]')
     if (!typeSelect) return
 
-    const actorDocumentTypes = game.system.documentTypes.Actor ?? []
+    const actorDocumentTypes = Object.keys(game.system.documentTypes.Actor ?? {})
     const renderedTypes = [...typeSelect.options].map(option => option.value)
     if (!renderedTypes.length || !renderedTypes.every(type => actorDocumentTypes.includes(type))) return
 

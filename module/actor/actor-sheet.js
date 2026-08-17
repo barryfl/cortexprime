@@ -303,64 +303,95 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     })
   }
 
-  async _getConsumableDiceSelection (options, label) {
-    const content = await foundry.applications.handlebars.renderTemplate('systems/cortexprime/templates/dialog/consumable-dice.html', {
+async _getConsumableDiceSelection (options, label) {
+  const content = await foundry.applications.handlebars.renderTemplate(
+    'systems/cortexprime/templates/dialog/consumable-dice.html',
+    {
       options,
       isOwner: game.user.isOwner
-    })
+    }
+  )
 
-    return new Promise((resolve, reject) => {
-      new Dialog({ 
-        title: label,
-        content,
-        buttons: {
-          cancel: {
-            icon: '<i class="fa-solid fa-times"></i>',
-            label: localizer('Cancel'),
-            callback () {
-              resolve({ remove: [], value: {} })
-            }
-          },
-          done: {
-            icon: '<i class="fa-solid fa-check"></i>',
-            label: localizer('AddToPool'),
-            callback (html) {
-              const remove = html.find('.remove-check').prop('checked')
-              const selectedDice = html.find('.die-select.selected').get()
+  return foundry.applications.api.DialogV2.wait({
+    window: {
+      title: label
+    },
 
-              if (!selectedDice?.length) {
-                resolve({ remove: [], value: {} })
-              }
+    content,
 
-              resolve(
-                selectedDice
-                  .reduce((selectedValues, selectedDie, index) => {
-                    const $selectedDie = $(selectedDie)
+    buttons: [
+      {
+        action: 'cancel',
+        icon: 'fa-solid fa-times',
+        label: localizer('Cancel'),
+        default: true,
+        callback: () => ({
+          remove: [],
+          value: {}
+        })
+      },
+      {
+        action: 'done',
+        icon: 'fa-solid fa-check',
+        label: localizer('AddToPool'),
+        callback: (event, button, dialog) => {
+          const root = dialog.element
 
-                    if (remove) {
-                      selectedValues.remove = [...selectedValues.remove, $selectedDie.data('key')]
-                    }
+          const remove =
+            root.querySelector('.remove-check')?.checked ?? false
 
-                    selectedValues.value = { ...selectedValues.value, [getLength(selectedValues.value)]: $selectedDie.data('value') }
+          const selectedDice =
+            [...root.querySelectorAll('.die-select.selected')]
 
-                    return selectedValues
-                  }, { remove: [], value: {} })
-              )
+          if (!selectedDice.length) {
+            return {
+              remove: [],
+              value: {}
             }
           }
-        },
-        default: 'cancel',
-        render(html) {
-          html.find('.die-select').click(function () {
-            const $dieContainer = $(this)
-            const $dieCpt = $dieContainer.find('.die-cpt')
-            $dieContainer.toggleClass('result selected')
-            $dieCpt.toggleClass('unchosen-cpt chosen-cpt')
-          })
+
+          return selectedDice.reduce(
+            (selectedValues, selectedDie, index) => {
+              if (remove) {
+                selectedValues.remove.push(selectedDie.dataset.key)
+              }
+
+              selectedValues.value[index] =
+                selectedDie.dataset.value
+
+              return selectedValues
+            },
+            {
+              remove: [],
+              value: {}
+            }
+          )
         }
-      }, { jQuery: true, classes: ['dialog', 'consumable-dice', 'cortexprime'] }).render(true)
+      }
+    ],
+
+    render: (event, dialog) => {
+      dialog.element
+        .querySelectorAll('.die-select')
+        .forEach(dieContainer => {
+          dieContainer.addEventListener('click', () => {
+            const die = dieContainer.querySelector('.die-cpt')
+
+            dieContainer.classList.toggle('result')
+            dieContainer.classList.toggle('selected')
+
+            die?.classList.toggle('unchosen-cpt')
+            die?.classList.toggle('chosen-cpt')
+          })
+        })
+    },
+
+    close: () => ({
+      remove: [],
+      value: {}
     })
-  }
+  })
+}
 
   async _newDie (event, actionTarget = event.currentTarget) {
     event.preventDefault()

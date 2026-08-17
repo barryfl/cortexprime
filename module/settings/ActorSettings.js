@@ -5,6 +5,8 @@ import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
 export default class ActorSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+  _savePromise = Promise.resolve()
+
   static DEFAULT_OPTIONS = {
     id: 'actor-settings',
     tag: 'form',
@@ -12,7 +14,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     form: {
       closeOnSubmit: false,
       submitOnChange: true,
-      submitOnClose: true,
       handler: function (event, form, formData) { return this._saveForm(event, form, formData) }
     },
     position: {
@@ -44,27 +45,24 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     }
   }
 
-  _getFormData (form, submittedFormData) {
-    const data = submittedFormData
-      ? { ...submittedFormData.object }
-      : Object.fromEntries(new FormData(form).entries())
-    for (const checkbox of form.querySelectorAll('input[type="checkbox"][name]')) {
-      data[checkbox.name] = checkbox.checked
-    }
-    for (const numberInput of form.querySelectorAll('input[type="number"][name]')) {
-      data[numberInput.name] = numberInput.valueAsNumber
-    }
-    return data
+  async _saveForm (event, form, submittedFormData) {
+    if (!form || event?.target?.classList?.contains('die-select')) return
+    const submittedData = submittedFormData.object
+    const actorTypes = foundry.utils.deepClone(
+      submittedData.actorTypes ?? foundry.utils.expandObject(submittedData).actorTypes ?? {}
+    )
+
+    this._savePromise = this._savePromise.then(async () => {
+      const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
+      await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(currentActorTypes, actorTypes))
+    })
+
+    return this._savePromise
   }
 
-  async _saveForm (event, form = this.form, submittedFormData) {
-    if (!form || event?.target?.classList?.contains('die-select')) return
-    const expandedFormData = foundry.utils.expandObject(this._getFormData(form, submittedFormData))
-    const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
-
-    await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(currentActorTypes, expandedFormData.actorTypes ?? {}))
-
-    if (event?.type === 'change') await this.render({ force: true })
+  async _saveCurrentForm () {
+    if (this.form) await this.submit()
+    await this._savePromise
   }
 
   async _onRender (context, options) {
@@ -106,6 +104,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addNewActorType(event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const newKey = getLength(source ?? {})
 
@@ -125,6 +124,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addDescriptor(event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentDescriptors = foundry.utils.getProperty(source, path) || {}
@@ -144,6 +144,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addSfx(event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentSfx = foundry.utils.getProperty(source, path) || {}
@@ -164,6 +165,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addSubTrait(event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { path } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentSubTraits = foundry.utils.getProperty(source, path) || {}
@@ -184,6 +186,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addSimpleTrait (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const { actorType: actorTypeKey } = event.currentTarget.dataset
     const newKey = getLength(source[actorTypeKey]?.simpleTraits || {})
@@ -215,6 +218,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addTrait (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const { actorType, path, traitSet } = event.currentTarget.dataset
     const currentTraits = foundry.utils.getProperty(source, `${path}.${traitSet}.traits`)
@@ -242,6 +246,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addTraitSet (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const { actorType: actorTypeKey } = event.currentTarget.dataset
     const newKey = getLength(source[actorTypeKey]?.traitSets || {})
@@ -263,6 +268,8 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
   }
 
   async _breadcrumbChange (event) {
+    event.preventDefault()
+    await this._saveCurrentForm()
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
     const { to: target } = event.currentTarget.dataset
@@ -282,7 +289,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
     await game.settings.set('cortexprime', 'actorBreadcrumbs', value)
 
-    await this._saveForm(event, this.form)
     await this.render({ force: true })
   }
 
@@ -303,6 +309,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _changeDefaultImage (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { actorTypeIndex } = event.currentTarget.dataset
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentImage = source[actorTypeIndex]?.defaultImage || 'icons/svg/mystery-man.svg'
@@ -344,6 +351,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _duplicateItem (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { id, path } = event.currentTarget.dataset
     let source = game.settings.get('cortexprime', 'actorTypes')
     const targetGroup = path ? foundry.utils.getProperty(source, path) : source
@@ -370,6 +378,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _newDie (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const { target: path } = event.currentTarget.dataset
     const currentDice = foundry.utils.getProperty(source, path) || {}
@@ -384,6 +393,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _onDieChange (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const { target, key: targetKey } = event.target.dataset
     const targetValue = event.target.value
@@ -404,6 +414,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     event.preventDefault()
 
     if (event.button === 2) {
+      await this._saveCurrentForm()
       const source = game.settings.get('cortexprime', 'actorTypes')
       const { target, key: targetKey } = event.currentTarget.dataset
       const currentDiceValues = foundry.utils.getProperty(source, `${target}.value`) ?? {}
@@ -418,11 +429,13 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _viewChange (event) {
     event.preventDefault()
+    await this._saveCurrentForm()
     const { name, to } = event.currentTarget.dataset
     await this.changeView(name, to)
   }
 
   async close (options) {
+    await this._saveCurrentForm()
     const result = await super.close(options)
     await game.settings.set('cortexprime', 'actorBreadcrumbs', {
       0: {

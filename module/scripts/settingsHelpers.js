@@ -10,7 +10,7 @@ export const collapseToggle = function (element) {
       collapseValue.checked = !collapseValue.checked
     }
 
-    await this._saveForm(event, this.form)
+    await this._saveCurrentForm()
     await this.render({ force: true })
   }))
 }
@@ -32,6 +32,7 @@ export const displayToggle = element => {
 export const removeItem = function (element) {
   element.querySelectorAll('.remove-item').forEach(removeButton => removeButton.addEventListener('click', async event => {
     event.preventDefault()
+    await this._saveCurrentForm()
     const {
       group,
       itemKey,
@@ -90,6 +91,7 @@ export const removeItem = function (element) {
 export const reorderItem = function (element) {
   element.querySelectorAll('.reorder').forEach(reorderButton => reorderButton.addEventListener('click', async event => {
     event.preventDefault()
+    await this._saveCurrentForm()
     const {
       currentIndex,
       newIndex,

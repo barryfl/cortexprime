@@ -3,6 +3,46 @@ import { localizer, setCssVars } from './scripts/foundryHelpers.js'
 import rollDice from './scripts/rollDice.js'
 
 export default () => {
+  Hooks.on('renderDialogV2', (application, element) => {
+    const typeSelect = element.querySelector('select[name="type"]')
+    if (!typeSelect) return
+
+    const actorDocumentTypes = game.system.documentTypes.Actor ?? []
+    const renderedTypes = [...typeSelect.options].map(option => option.value)
+    if (!renderedTypes.length || !renderedTypes.every(type => actorDocumentTypes.includes(type))) return
+
+    const actorTypes = Object.values(game.settings.get('cortexprime', 'actorTypes') ?? {})
+    if (!actorTypes.length) return
+
+    const documentType = typeSelect.value || actorDocumentTypes[0] || 'character'
+    const documentTypeInput = document.createElement('input')
+    documentTypeInput.type = 'hidden'
+    documentTypeInput.name = 'type'
+    documentTypeInput.value = documentType
+
+    typeSelect.before(documentTypeInput)
+    typeSelect.name = 'system.actorType.id'
+    typeSelect.replaceChildren(...actorTypes.map(actorType => new Option(
+      actorType.name || `[${localizer('NoName')}]`,
+      actorType.id
+    )))
+  })
+
+  Hooks.on('preCreateActor', actor => {
+    const selectedActorType = foundry.utils.getProperty(actor._source, 'system.actorType')
+    if (!selectedActorType?.id || Object.keys(selectedActorType).length !== 1) return
+
+    const actorType = Object.values(game.settings.get('cortexprime', 'actorTypes') ?? {})
+      .find(type => type.id === selectedActorType.id)
+    if (!actorType) return
+
+    actor.updateSource({
+      img: actorType.defaultImage,
+      'system.actorType': foundry.utils.deepClone(actorType),
+      'system.pp.value': actorType.hasPlotPoints ? 1 : 0
+    })
+  })
+
   Hooks.once('diceSoNiceReady', dice3d => {
     dice3d.addSystem({ id: 'cp-pp', name: 'Cortex Prime Plot Point' }, false)
     const ppLabel = 'systems/cortexprime/assets/plot-point/plot-point.png'

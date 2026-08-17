@@ -6,10 +6,12 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 export default class ImportExportSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: 'import-export-settings',
-    tagName: 'form',
+    tag: 'form',
     classes: ['cortexprime', 'import-export-settings'],
     form: {
       closeOnSubmit: false,
+      submitOnChange: true,
+      submitOnClose: true,
       handler: function () {}
     },
     position: {

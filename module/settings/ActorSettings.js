@@ -7,11 +7,13 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 export default class ActorSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: 'actor-settings',
-    tagName: 'form',
+    tag: 'form',
     classes: ['cortexprime', 'actor-settings'],
     form: {
       closeOnSubmit: false,
-      handler: function () { return this._saveForm() }
+      submitOnChange: true,
+      submitOnClose: true,
+      handler: function (event, form, formData) { return this._saveForm(event, form, formData) }
     },
     position: {
       width: 600,
@@ -42,26 +44,27 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     }
   }
 
-  _getFormData () {
-    const formData = new FormData(this.element)
-    const data = Object.fromEntries(formData.entries())
-    for (const checkbox of this.element.querySelectorAll('input[type="checkbox"][name]')) {
+  _getFormData (form, submittedFormData) {
+    const data = submittedFormData
+      ? { ...submittedFormData.object }
+      : Object.fromEntries(new FormData(form).entries())
+    for (const checkbox of form.querySelectorAll('input[type="checkbox"][name]')) {
       data[checkbox.name] = checkbox.checked
     }
-    for (const numberInput of this.element.querySelectorAll('input[type="number"][name]')) {
+    for (const numberInput of form.querySelectorAll('input[type="number"][name]')) {
       data[numberInput.name] = numberInput.valueAsNumber
     }
     return data
   }
 
-  async _saveForm ({ render = true } = {}) {
-    if (!this.rendered) return
-    const expandedFormData = foundry.utils.expandObject(this._getFormData())
+  async _saveForm (event, form = this.form, submittedFormData) {
+    if (!form || event?.target?.classList?.contains('die-select')) return
+    const expandedFormData = foundry.utils.expandObject(this._getFormData(form, submittedFormData))
     const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(currentActorTypes, expandedFormData.actorTypes ?? {}))
 
-    if (render) await this.render({ force: true })
+    if (event?.type === 'change') await this.render({ force: true })
   }
 
   async _onRender (context, options) {
@@ -91,7 +94,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     this.element.addEventListener('change', async event => {
       if (event.target.classList.contains('die-select')) return this._onDieChange(event)
       if (event.target.classList.contains('breadcrumb-name-change')) await this._breadcrumbNameChange(event)
-      await this._saveForm()
     })
 
     this.element.querySelectorAll('.die-select').forEach(element => {
@@ -280,7 +282,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
     await game.settings.set('cortexprime', 'actorBreadcrumbs', value)
 
-    await this._saveForm({ render: false })
+    await this._saveForm(event, this.form)
     await this.render({ force: true })
   }
 
@@ -421,7 +423,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
   }
 
   async close (options) {
-    if (this.rendered) await this._saveForm({ render: false })
+    const result = await super.close(options)
     await game.settings.set('cortexprime', 'actorBreadcrumbs', {
       0: {
         active: true,
@@ -430,6 +432,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         localize: true
       }
     })
-    return super.close(options)
+    return result
   }
 }

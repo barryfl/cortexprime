@@ -10,7 +10,7 @@ export const collapseToggle = function (element) {
       collapseValue.checked = !collapseValue.checked
     }
 
-    await this._saveForm({ render: false })
+    await this._saveForm(event, this.form)
     await this.render({ force: true })
   }))
 }

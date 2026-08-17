@@ -6,11 +6,13 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 export default class ThemeSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: 'theme-settings',
-    tagName: 'form',
+    tag: 'form',
     classes: ['cortexprime', 'theme-settings'],
     form: {
       closeOnSubmit: false,
-      handler: function () { return this._saveForm() }
+      submitOnChange: true,
+      submitOnClose: true,
+      handler: function (event, form, formData) { return this._saveForm(event, form, formData) }
     },
     position: {
       width: 960,
@@ -40,21 +42,22 @@ export default class ThemeSettings extends HandlebarsApplicationMixin(Applicatio
     }
   }
 
-  _getFormData () {
-    const formData = new FormData(this.element)
-    const data = Object.fromEntries(formData.entries())
-    for (const checkbox of this.element.querySelectorAll('input[type="checkbox"][name]')) {
+  _getFormData (form, submittedFormData) {
+    const data = submittedFormData
+      ? { ...submittedFormData.object }
+      : Object.fromEntries(new FormData(form).entries())
+    for (const checkbox of form.querySelectorAll('input[type="checkbox"][name]')) {
       data[checkbox.name] = checkbox.checked
     }
-    for (const numberInput of this.element.querySelectorAll('input[type="number"][name]')) {
+    for (const numberInput of form.querySelectorAll('input[type="number"][name]')) {
       data[numberInput.name] = numberInput.valueAsNumber
     }
     return data
   }
 
-  async _saveForm ({ render = true } = {}) {
-    if (!this.rendered) return
-    const formData = this._getFormData()
+  async _saveForm (event, form = this.form, submittedFormData) {
+    if (!form) return
+    const formData = this._getFormData(form, submittedFormData)
     const expandedFormData = foundry.utils.expandObject(formData)
     const currentThemes = game.settings.get('cortexprime', 'themes') ?? {}
 
@@ -71,12 +74,11 @@ export default class ThemeSettings extends HandlebarsApplicationMixin(Applicatio
 
     setCssVars(theme)
 
-    if (render) await this.render({ force: true })
+    if (event?.type === 'change') await this.render({ force: true })
   }
 
   async _onRender (context, options) {
     await super._onRender(context, options)
-    this.element.addEventListener('change', () => this._saveForm())
     this.element.querySelectorAll('.image-picker').forEach(element => element.addEventListener('click', event => this._changeImage(event)))
     this.element.querySelectorAll('.image-remove').forEach(element => element.addEventListener('click', event => this._removeImage(event)))
     this.element.querySelector('.refresh-preset')?.addEventListener('click', event => this._refreshPreset(event))
@@ -173,8 +175,4 @@ export default class ThemeSettings extends HandlebarsApplicationMixin(Applicatio
     await this.render({ force: true })
   }
 
-  async close (options) {
-    if (this.rendered) await this._saveForm({ render: false })
-    return super.close(options)
-  }
 }

@@ -40,7 +40,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       spendPp: function () { return this._spendPp() },
       toggleItem: function (event, target) { return toggleItems.call(this, event, target) },
       traitSetEdit: function (event, target) { return this._traitSetEdit(event, target) },
-      updateActorSettings: function (event) { return this._updateActorSettings(event) }
+      updateActorSettings: function (event) { return this._updateActorSettings(event) },
+      editProfileImage: function (event, target) {return this._editProfileImage(event, target)}
     },
     form: {
       closeOnSubmit: false,
@@ -522,4 +523,17 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     await this._saveCurrentForm()
     return super.close(options)
   }
+  async _editProfileImage (event) {
+  event.preventDefault()
+
+  const picker = new foundry.applications.apps.FilePicker({
+    type: 'image',
+    current: this.actor.img,
+    callback: async imagePath => {
+      await this.actor.update({ img: imagePath })
+    }
+  })
+
+  await picker.render(true)
+}
 }

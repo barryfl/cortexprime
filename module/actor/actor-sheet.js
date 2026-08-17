@@ -358,7 +358,7 @@ export class CortexPrimeActorSheet extends foundry.appv1.sheets.ActorSheet {
 
   async _resetDataPoint(path, target, value) {
     await this.actor.update({
-      [`${path}.-=${target}`]: null
+      [`${path}.${target}`]: foundry.data.operators.ForcedDeletion.create()
     })
 
     await this.actor.update({

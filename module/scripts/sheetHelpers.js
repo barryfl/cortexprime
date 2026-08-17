@@ -14,7 +14,7 @@ export const addNewDataPoint = async function (data, path, value) {
 
 export const resetDataPoint = async function (path, target, value) {
   await this.actor.update({
-    [`${path}.-=${target}`]: null
+    [`${path}.${target}`]: foundry.data.operators.ForcedDeletion.create()
   })
 
   await this.actor.update({

@@ -159,6 +159,11 @@ const dicePicker = async rollResults => {
     rollResults,
     theme
   })
+  const unselectedDice = {
+    dice: rollResults.results.map(({ faces, result }) => ({ effect: false, faces, result, total: false })),
+    total: null,
+    effectDice: []
+  }
 
   const getSelectedDice = (element, includeSelections = true) => {
     const values = { dice: [], total: null, effectDice: [] }
@@ -199,8 +204,8 @@ const dicePicker = async rollResults => {
         }
       }
     ],
-    close (event, dialog) {
-      return getSelectedDice(dialog.element, false)
+    close () {
+      return unselectedDice
     },
     render (event, dialog) {
       const element = dialog.element
@@ -209,6 +214,7 @@ const dicePicker = async rollResults => {
       const addToEffect = element.querySelector('.add-to-effect')
       const resetSelection = element.querySelector('.reset-selection')
       const effectDiceContainer = element.querySelector('.effect-dice')
+      const confirmSelection = element.querySelector('.confirm-selection')
 
         const setSelectionOptionsDisableTo = (value) => {
           addToTotal.disabled = value ?? !addToTotal.disabled
@@ -363,6 +369,8 @@ const dicePicker = async rollResults => {
           setSelectionOptionsDisableTo(true)
           resetSelection.disabled = true
         })
+
+        confirmSelection.addEventListener('click', () => dialog.submit())
     }
   })
 }

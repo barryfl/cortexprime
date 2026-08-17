@@ -1,6 +1,6 @@
 /**
- * Extend the basic ActorSheet with some very simple modifications
- * @extends {foundry.appv1.sheets.ActorSheet}
+ * Extend the ApplicationV2 ActorSheet with some very simple modifications
+ * @extends {foundry.applications.sheets.ActorSheetV2}
  */
 import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objectSome } from '../../lib/helpers.js'
 import { localizer } from '../scripts/foundryHelpers.js'
@@ -9,30 +9,51 @@ import {
   toggleItems
 } from '../scripts/sheetHelpers.js'
 
-export class CortexPrimeActorSheet extends foundry.appv1.sheets.ActorSheet {
+const { HandlebarsApplicationMixin } = foundry.applications.api
+const { ActorSheetV2 } = foundry.applications.sheets
+
+export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   get actor () {
     return super.actor
   }
 
   /** @override */
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ['cortexprime', 'sheet', 'actor', 'actor-sheet'],
-      template: "systems/cortexprime/templates/actor/actor-sheet.html",
+  static DEFAULT_OPTIONS = {
+    classes: ['cortexprime', 'sheet', 'actor', 'actor-sheet'],
+    position: {
       width: 960,
-      height: 900,
-      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "traits" }]
-    })
+      height: 900
+    }
   }
 
-  getData (options) {
-    const data = super.getData(options)
+  static PARTS = {
+    sheet: {
+      template: 'systems/cortexprime/templates/actor/actor-sheet.html'
+    }
+  }
+
+  static TABS = {
+    primary: {
+      tabs: [
+        { id: 'traits' },
+        { id: 'notes' }
+      ],
+      initial: 'traits'
+    }
+  }
+
+  async _prepareContext (options) {
+    const context = await super._prepareContext(options)
     const themes = game.settings.get('cortexprime', 'themes')
     const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
 
     return {
-      ...data,
+      ...context,
+      actor: this.actor,
+      data: this.actor.toObject(false),
+      owner: this.actor.isOwner,
+      cssClass: this.isEditable ? 'editable' : 'locked',
       actorTypeOptions: objectMapValues(game.settings.get('cortexprime', 'actorTypes'), val => val.name),
       theme,
     }

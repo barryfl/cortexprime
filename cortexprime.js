@@ -20,7 +20,6 @@ Hooks.once('init', () => {
   preloadHandlebarsTemplates()
   registerSettings()
 
-  foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet)
   foundry.documents.collections.Actors.registerSheet("cortexprime", CortexPrimeActorSheet, { makeDefault: true })
 
   cortexPrimeHooks()

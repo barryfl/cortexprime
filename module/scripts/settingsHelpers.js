@@ -56,10 +56,15 @@ export const removeItem = function (element) {
         let settings = game.settings.get('cortexprime', setting)
 
         const currentGroupSettings = group ? await foundry.utils.getProperty(settings, group) : settings
+        const removedItem = currentGroupSettings?.[itemKey]
         const groupSettingValue = objectReindexFilter(currentGroupSettings, (_, key) => +key !== +itemKey)
 
         if (group) {
           foundry.utils.setProperty(settings, group, groupSettingValue)
+          if (setting === 'actorTypes' && group.endsWith('.traitSets') && removedItem?.id) {
+            const actorTypeKey = group.split('.')[0]
+            delete settings[actorTypeKey]?.sectionLayout?.[removedItem.id]
+          }
         } else {
           settings = groupSettingValue
         }

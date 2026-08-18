@@ -13,6 +13,7 @@ import {
 const { HandlebarsApplicationMixin } = foundry.applications.api
 const { ActorSheetV2 } = foundry.applications.sheets
 const actorSheetSectionKeys = ['profile', 'plotPoints', 'simpleTraits', 'assets', 'complications']
+const actorSheetSectionWidths = ['full', 'half', 'third']
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _savePromise = Promise.resolve()
@@ -77,10 +78,39 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const configuredTabIds = configuredTabs.map(tab => tab.id)
     const configuredSheetTabIds = configuredTabs.map(tab => `trait-${tab.id}`)
     const defaultTabId = configuredTabIds[0]
-    const sectionTabs = Object.fromEntries(actorSheetSectionKeys.map(section => [
-      section,
-      configuredTabIds.includes(actorType?.sectionTabs?.[section]) ? actorType.sectionTabs[section] : defaultTabId
-    ]))
+    const traitSets = Object.entries(actorType?.traitSets ?? {})
+    const naturalSections = [
+      ...actorSheetSectionKeys.slice(0, 3).map((id, order) => ({ id, order, type: id })),
+      ...traitSets.map(([traitSetIndex, traitSet], index) => ({
+        id: traitSet.id,
+        order: index + 3,
+        traitSet,
+        traitSetIndex,
+        traitSets: { [traitSetIndex]: traitSet },
+        type: 'traitSet'
+      })),
+      ...actorSheetSectionKeys.slice(3).map((id, index) => ({
+        id,
+        order: traitSets.length + index + 3,
+        type: id
+      }))
+    ]
+    const sheetSections = naturalSections.map(section => {
+      const layout = actorType?.sectionLayout?.[section.id] ?? {}
+      const legacyTabId = section.type === 'traitSet' ? section.traitSet.tabId : actorType?.sectionTabs?.[section.id]
+
+      return {
+        ...section,
+        enabled: section.type === 'profile' || section.type === 'traitSet' ||
+          (section.type === 'plotPoints' && actorType?.hasPlotPoints) ||
+          (section.type === 'simpleTraits' && getLength(actorType?.simpleTraits)) ||
+          (section.type === 'assets' && actorType?.hasAssets) ||
+          (section.type === 'complications' && actorType?.hasComplications),
+        order: Number.isFinite(Number(layout.order)) ? Number(layout.order) : section.order,
+        tabId: configuredTabIds.includes(layout.tabId ?? legacyTabId) ? (layout.tabId ?? legacyTabId) : defaultTabId,
+        width: actorSheetSectionWidths.includes(layout.width) ? layout.width : 'full'
+      }
+    }).sort((a, b) => a.order - b.order)
 
     if (!configuredSheetTabIds.includes(this._activeSheetTab) && !(this._activeSheetTab === 'notes' && actorType?.hasNotesPage)) {
       this._activeSheetTab = configuredSheetTabIds[0]
@@ -89,12 +119,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const actorTabs = configuredTabs.map(tab => ({
       ...tab,
       cssClass: this._activeSheetTab === `trait-${tab.id}` ? 'active' : '',
-      sections: Object.fromEntries(actorSheetSectionKeys.map(section => [section, sectionTabs[section] === tab.id])),
+      sections: sheetSections.filter(section => section.enabled && section.tabId === tab.id),
       sheetTabId: `trait-${tab.id}`,
-      traitSets: Object.fromEntries(Object.entries(actorType?.traitSets ?? {}).filter(([, traitSet]) => {
-        const tabId = configuredTabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
-        return tabId === tab.id
-      }))
     }))
 
     return {

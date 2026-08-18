@@ -43,56 +43,51 @@
         <div class="sheet-body">
           {{#each actorTabs as |tab|}}
             <article class="tab sets {{tab.cssClass}}" data-group="primary" data-tab="{{tab.sheetTabId}}">
-              {{#if tab.sections.profile}}
-                {{> "systems/cortexprime/templates/partials/actor-sheet/identity.html"
-                  actor=../actor
-                  actorType=../data.system.actorType
-                  owner=../owner
-                }}
-              {{/if}}
-              {{#if (and tab.sections.plotPoints ../data.system.actorType.hasPlotPoints)}}
-                <section class="section-cpt mb-4">
-                  <div class="section-image"></div>
-                  <div class="section-content pa-2">
-                    {{> "systems/cortexprime/templates/partials/pp.html"
-                      owner=../owner
-                      pp=../data.system.pp
-                    }}
+              <div class="actor-sheet-section-grid">
+                {{#each tab.sections as |section|}}
+                  <div class="actor-sheet-section actor-sheet-section--{{section.width}}">
+                    {{#if (eq section.type 'profile')}}
+                      {{> "systems/cortexprime/templates/partials/actor-sheet/identity.html"
+                        actor=../../actor
+                        actorType=../../data.system.actorType
+                        owner=../../owner
+                      }}
+                    {{else if (and (eq section.type 'plotPoints') ../../data.system.actorType.hasPlotPoints)}}
+                      <section class="section-cpt mb-4">
+                        <div class="section-image"></div>
+                        <div class="section-content pa-2">
+                          {{> "systems/cortexprime/templates/partials/pp.html" owner=../../owner pp=../../data.system.pp}}
+                        </div>
+                      </section>
+                    {{else if (and (eq section.type 'simpleTraits') ../../data.system.actorType.simpleTraits)}}
+                      <section class="section-cpt mb-4">
+                        <div class="section-image"></div>
+                        <div class="section-content">
+                          {{> "systems/cortexprime/templates/partials/actor-sheet/simple-traits.html"
+                            data=../../data.system.actorType owner=../../owner
+                            simpleTraits=../../data.system.actorType.simpleTraits path="system.actorType.simpleTraits"
+                          }}
+                        </div>
+                      </section>
+                    {{else if (eq section.type 'traitSet')}}
+                      {{> "systems/cortexprime/templates/partials/actor-sheet/trait-sets.html"
+                        data=../../data.system.actorType owner=../../owner
+                        traitSets=section.traitSets path="system.actorType.traitSets"
+                      }}
+                    {{else if (and (eq section.type 'assets') ../../data.system.actorType.hasAssets)}}
+                      {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-traits.html"
+                        data=../../data.system.actorType owner=../../owner path="system.actorType"
+                        showAssets=true showComplications=false
+                      }}
+                    {{else if (and (eq section.type 'complications') ../../data.system.actorType.hasComplications)}}
+                      {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-traits.html"
+                        data=../../data.system.actorType owner=../../owner path="system.actorType"
+                        showAssets=false showComplications=true
+                      }}
+                    {{/if}}
                   </div>
-                </section>
-              {{/if}}
-              {{#if (and tab.sections.simpleTraits ../data.system.actorType.simpleTraits)}}
-                <section class="section-cpt mb-4">
-                  <div class="section-image"></div>
-                  <div class="section-content">
-                    {{> "systems/cortexprime/templates/partials/actor-sheet/simple-traits.html"
-                      data=../data.system.actorType
-                      owner=../owner
-                      simpleTraits=../data.system.actorType.simpleTraits
-                      path="system.actorType.simpleTraits"
-                    }}
-                  </div>
-                </section>
-              {{/if}}
-              {{#if (listHasMore tab.traitSets 0)}}
-                <section class="mb-4">
-                  {{> "systems/cortexprime/templates/partials/actor-sheet/trait-sets.html"
-                    data=../data.system.actorType
-                    owner=../owner
-                    traitSets=tab.traitSets
-                    path="system.actorType.traitSets"
-                  }}
-                </section>
-              {{/if}}
-              {{#if (or (and tab.sections.assets ../data.system.actorType.hasAssets) (and tab.sections.complications ../data.system.actorType.hasComplications))}}
-                {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-traits.html"
-                  data=../data.system.actorType
-                  owner=../owner
-                  path="system.actorType"
-                  showAssets=tab.sections.assets
-                  showComplications=tab.sections.complications
-                }}
-              {{/if}}
+                {{/each}}
+              </div>
             </article>
           {{/each}}
           {{#if data.system.actorType.hasNotesPage}}

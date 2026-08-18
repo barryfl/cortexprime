@@ -122,14 +122,33 @@
       <div class="separator-cpt"></div>
       <div class="relative-section pa-2">
         <div class="section-background-alternate"></div>
-        <h3 class="section-secondary-title-cpt">{{localize 'PredefinedSectionPlacement'}}</h3>
+        <h3 class="section-secondary-title-cpt">{{localize 'SheetSectionLayout'}}</h3>
+        <p>{{localize 'SheetSectionLayoutDescription'}}</p>
         {{#each actorType.sheetSections as |section|}}
-          <label class="input-label-cpt mt-1">{{section.label}}</label>
-          <select class="input-cpt mb-2" name="actorTypes.{{../actorTypeIndex}}.sectionTabs.{{section.key}}">
-            {{#each ../actorType.tabs as |tab|}}
-              <option value="{{tab.id}}" {{#if (eq section.tabId tab.id)}}selected{{/if}}>{{tab.label}}</option>
-            {{/each}}
-          </select>
+          <div class="flex-row flex-ac mb-2">
+            <div class="flex-col">
+              <button class="btn btn-icon btn-icon-plain-cpt btn-small move-sheet-section d-block" type="button" data-actor-type="{{../actorTypeIndex}}" data-section-id="{{section.id}}" data-direction="-1"><i class="fa fa-chevron-up"></i></button>
+              <button class="btn btn-icon btn-icon-plain-cpt btn-small move-sheet-section d-block" type="button" data-actor-type="{{../actorTypeIndex}}" data-section-id="{{section.id}}" data-direction="1"><i class="fa fa-chevron-down"></i></button>
+            </div>
+            <div class="flex-col col-3"><span class="section-secondary-title-cpt">{{section.label}}</span></div>
+            <div class="flex-col col-4">
+              <label class="input-label-cpt">{{localize 'ActorSheetTab'}}</label>
+              <select class="input-cpt" name="actorTypes.{{../actorTypeIndex}}.sectionLayout.{{section.id}}.tabId">
+                {{#each ../actorType.tabs as |tab|}}
+                  <option value="{{tab.id}}" {{#if (eq section.tabId tab.id)}}selected{{/if}}>{{tab.label}}</option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="flex-col col-4">
+              <label class="input-label-cpt">{{localize 'Width'}}</label>
+              <select class="input-cpt" name="actorTypes.{{../actorTypeIndex}}.sectionLayout.{{section.id}}.width">
+                <option value="full" {{#if (eq section.width 'full')}}selected{{/if}}>{{localize 'Full'}}</option>
+                <option value="half" {{#if (eq section.width 'half')}}selected{{/if}}>{{localize 'Half'}}</option>
+                <option value="third" {{#if (eq section.width 'third')}}selected{{/if}}>{{localize 'Third'}}</option>
+              </select>
+              <input name="actorTypes.{{../actorTypeIndex}}.sectionLayout.{{section.id}}.order" type="hidden" value="{{section.order}}">
+            </div>
+          </div>
         {{/each}}
       </div>
     </section>

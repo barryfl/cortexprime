@@ -15,6 +15,15 @@ export default {
       assets: '_tab1',
       complications: '_tab1'
     },
+    sectionLayout: {
+      profile: { order: 0, tabId: '_tab1', width: 'full' },
+      plotPoints: { order: 1, tabId: '_tab1', width: 'full' },
+      simpleTraits: { order: 2, tabId: '_tab1', width: 'full' },
+      _11: { order: 3, tabId: '_tab1', width: 'full' },
+      _12: { order: 4, tabId: '_tab1', width: 'full' },
+      assets: { order: 5, tabId: '_tab1', width: 'full' },
+      complications: { order: 6, tabId: '_tab1', width: 'full' }
+    },
     showProfileImage: true,
     tabs: {
       0: {
@@ -133,6 +142,17 @@ export default {
       simpleTraits: '_tab2',
       assets: '_tab2',
       complications: '_tab2'
+    },
+    sectionLayout: {
+      profile: { order: 0, tabId: '_tab2', width: 'full' },
+      plotPoints: { order: 1, tabId: '_tab2', width: 'full' },
+      simpleTraits: { order: 2, tabId: '_tab2', width: 'full' },
+      _21: { order: 3, tabId: '_tab2', width: 'full' },
+      _22: { order: 4, tabId: '_tab2', width: 'full' },
+      _23: { order: 5, tabId: '_tab2', width: 'full' },
+      _24: { order: 6, tabId: '_tab2', width: 'full' },
+      assets: { order: 7, tabId: '_tab2', width: 'full' },
+      complications: { order: 8, tabId: '_tab2', width: 'full' }
     },
     showProfileImage: false,
     tabs: {

@@ -11,6 +11,7 @@ const actorSheetSections = {
   assets: 'Assets',
   complications: 'Complications'
 }
+const sheetSectionWidths = ['full', 'half', 'third']
 
 export default class ActorSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   _savePromise = Promise.resolve()
@@ -52,16 +53,38 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         : { 0: { id: 'traits', label: localizer('Traits') } }
       const tabIds = Object.values(tabs).map(tab => tab.id)
       const defaultTabId = tabIds[0]
+      const traitSets = Object.entries(actorType.traitSets ?? {})
+      const naturalSections = [
+        ...Object.entries(actorSheetSections).slice(0, 3).map(([id, label], order) => ({ id, label: localizer(label), order })),
+        ...traitSets.map(([traitSetIndex, traitSet], index) => ({
+          id: traitSet.id,
+          label: traitSet.label || localizer('TraitSet'),
+          order: index + 3,
+          traitSetIndex
+        })),
+        ...Object.entries(actorSheetSections).slice(3).map(([id, label], index) => ({
+          id,
+          label: localizer(label),
+          order: traitSets.length + index + 3
+        }))
+      ]
 
       actorType.tabs = tabs
-      actorType.sectionTabs = objectMapValues(actorSheetSections, (_, section) => (
-        tabIds.includes(actorType.sectionTabs?.[section]) ? actorType.sectionTabs[section] : defaultTabId
-      ))
-      actorType.sheetSections = Object.entries(actorSheetSections).map(([key, label]) => ({
-        key,
-        label: localizer(label),
-        tabId: actorType.sectionTabs[key]
+      actorType.sectionLayout = Object.fromEntries(naturalSections.map(section => {
+        const current = actorType.sectionLayout?.[section.id] ?? {}
+        const legacyTabId = section.traitSetIndex !== undefined
+          ? actorType.traitSets[section.traitSetIndex]?.tabId
+          : actorType.sectionTabs?.[section.id]
+
+        return [section.id, {
+          order: Number.isFinite(Number(current.order)) ? Number(current.order) : section.order,
+          tabId: tabIds.includes(current.tabId ?? legacyTabId) ? (current.tabId ?? legacyTabId) : defaultTabId,
+          width: sheetSectionWidths.includes(current.width) ? current.width : 'full'
+        }]
       }))
+      actorType.sheetSections = naturalSections
+        .map(section => ({ ...section, ...actorType.sectionLayout[section.id] }))
+        .sort((a, b) => a.order - b.order)
       actorType.traitSets = objectMapValues(actorType.traitSets ?? {}, traitSet => ({
         ...traitSet,
         tabId: tabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
@@ -112,6 +135,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
       '.default-image': this._changeDefaultImage,
       '.duplicate-item': this._duplicateItem,
       '.new-die': this._newDie,
+      '.move-sheet-section': this._moveSheetSection,
       '.remove-actor-tab': this._removeTab,
       '.view-change': this._viewChange,
       '[data-action="openActorSettingsHelp"]': this._openActorSettingsHelp
@@ -159,7 +183,11 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         id: `_${Date.now()}`,
         name: localizer('NewActorType'),
         showProfileImage: true,
-        sectionTabs: objectMapValues(actorSheetSections, () => defaultTabId),
+        sectionLayout: Object.fromEntries(Object.keys(actorSheetSections).map((section, order) => [section, {
+          order,
+          tabId: defaultTabId,
+          width: 'full'
+        }])),
         tabs: {
           0: {
             id: defaultTabId,
@@ -303,17 +331,28 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     const source = game.settings.get('cortexprime', 'actorTypes')
     const newKey = getLength(source[actorTypeKey]?.traitSets || {})
     const defaultTabId = Object.values(source[actorTypeKey]?.tabs ?? {})[0]?.id ?? 'traits'
+    const traitSetId = `_${Date.now()}`
+    const sectionLayout = source[actorTypeKey]?.sectionLayout ?? {}
+    const nextOrder = getLength(source[actorTypeKey]?.traitSets ?? {}) + 3
+
+    for (const layout of Object.values(sectionLayout)) {
+      if (Number(layout.order) >= nextOrder) layout.order = Number(layout.order) + 1
+    }
 
     const newTraitSet = {
       [actorTypeKey]: {
         traitSets: {
           [newKey]: {
-            id: `_${Date.now()}`,
+            id: traitSetId,
             label: localizer('NewTraitSet'),
             tabId: defaultTabId
           }
         }
       }
+    }
+
+    newTraitSet[actorTypeKey].sectionLayout = {
+      [traitSetId]: { order: nextOrder, tabId: defaultTabId, width: 'full' }
     }
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newTraitSet))
@@ -370,6 +409,10 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     const remainingTabIds = Object.values(remainingTabs).map(remainingTab => remainingTab.id)
 
     actorType.tabs = remainingTabs
+    actorType.sectionLayout = objectMapValues(actorType.sectionLayout ?? {}, layout => ({
+      ...layout,
+      tabId: remainingTabIds.includes(layout.tabId) ? layout.tabId : defaultTabId
+    }))
     actorType.sectionTabs = objectMapValues(actorSheetSections, (_, section) => (
       remainingTabIds.includes(actorType.sectionTabs?.[section]) ? actorType.sectionTabs[section] : defaultTabId
     ))
@@ -377,6 +420,35 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
       ...traitSet,
       tabId: remainingTabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
     }))
+
+    await game.settings.set('cortexprime', 'actorTypes', source)
+    await this.render({ force: true })
+  }
+
+  async _moveSheetSection (event) {
+    event.preventDefault()
+    const { actorType: actorTypeKey, direction, sectionId } = event.currentTarget.dataset
+    await this._saveCurrentForm()
+    const source = game.settings.get('cortexprime', 'actorTypes')
+    const actorType = source[actorTypeKey]
+    const layout = actorType?.sectionLayout ?? {}
+    const validSectionIds = new Set([
+      ...Object.keys(actorSheetSections),
+      ...Object.values(actorType?.traitSets ?? {}).map(traitSet => traitSet.id)
+    ])
+    const orderedIds = Object.entries(layout)
+      .filter(([id]) => validSectionIds.has(id))
+      .sort(([, a], [, b]) => Number(a.order) - Number(b.order))
+      .map(([id]) => id)
+    const currentIndex = orderedIds.indexOf(sectionId)
+    const targetIndex = currentIndex + Number(direction)
+
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= orderedIds.length) return
+
+    const targetId = orderedIds[targetIndex]
+    const currentOrder = layout[sectionId].order
+    layout[sectionId].order = layout[targetId].order
+    layout[targetId].order = currentOrder
 
     await game.settings.set('cortexprime', 'actorTypes', source)
     await this.render({ force: true })
@@ -471,16 +543,17 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _duplicateItem (event) {
     event.preventDefault()
-    await this._saveCurrentForm()
     const { id, path } = event.currentTarget.dataset
+    await this._saveCurrentForm()
     let source = game.settings.get('cortexprime', 'actorTypes')
     const targetGroup = path ? foundry.utils.getProperty(source, path) : source
     const newKey = getLength(targetGroup ?? {})
     const target = objectFindValue(targetGroup, item => item.id === id)
 
+    const newId = `_${Date.now()}`
     const newTarget = {
       [newKey]: objectMapValues(target, (value, key) => {
-        if (key === 'id') return `_${Date.now()}`
+        if (key === 'id') return newId
 
         return value
       })
@@ -488,6 +561,19 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
     if (path) {
       foundry.utils.setProperty(source, path, { ...targetGroup, ...newTarget })
+      if (path.endsWith('.traitSets')) {
+        const actorTypeKey = path.split('.')[0]
+        const layout = source[actorTypeKey].sectionLayout ?? {}
+        const nextOrder = Math.max(-1, ...Object.values(layout).map(section => Number(section.order) || 0)) + 1
+        source[actorTypeKey].sectionLayout = {
+          ...layout,
+          [newId]: {
+            order: nextOrder,
+            tabId: layout[id]?.tabId ?? Object.values(source[actorTypeKey].tabs ?? {})[0]?.id ?? 'traits',
+            width: layout[id]?.width ?? 'full'
+          }
+        }
+      }
     } else {
       source = foundry.utils.mergeObject(source, newTarget)
     }

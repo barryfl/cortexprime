@@ -17,12 +17,6 @@
   <div>
     <div class="relative-section pa-2">
       <div class="section-background"></div>
-      <label class="input-label-cpt">{{localize 'ActorSheetTab'}}</label>
-      <select class="input-cpt mb-2" name="{{concat 'actorTypes.' path '.' traitSetIndex '.tabId'}}">
-        {{#each actorType.tabs as |tab|}}
-          <option value="{{tab.id}}" {{#if (eq ../traitSet.tabId tab.id)}}selected{{/if}}>{{tab.label}}</option>
-        {{/each}}
-      </select>
       <label class="flex flex-ac">
         <div class="checkmark-container">
           <input class="input-checkbox-cpt" name="{{concat 'actorTypes.' path '.' traitSetIndex '.hasDescription'}}" type="checkbox" {{checked

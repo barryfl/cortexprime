@@ -106,8 +106,6 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         }
       })
 
-    })
-
     this.element.querySelectorAll('.die-select').forEach(element => {
       element.addEventListener('mouseup', event => this._onDieRemove(event))
     })

@@ -312,12 +312,14 @@ async _getConsumableDiceSelection (options, label) {
     }
   )
 
-  return foundry.applications.api.DialogV2.wait({
-    window: {
-      title: label
-    },
+return foundry.applications.api.DialogV2.wait({
+  window: {
+    title: label
+  },
 
-    content,
+  classes: ['dialog', 'dice-picker', 'cortexprime'],
+
+  content,
 
     buttons: [
       {

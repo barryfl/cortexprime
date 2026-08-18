@@ -62,25 +62,37 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     }
   }
 
-  static TABS = {
-    primary: {
-      tabs: [
-        { id: 'traits' },
-        { id: 'notes' }
-      ],
-      initial: 'traits'
-    }
-  }
-
   async _prepareContext (options) {
     const context = await super._prepareContext(options)
     const themes = game.settings.get('cortexprime', 'themes')
     const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
+    const actorType = this.actor.system.actorType
+    const configuredTabs = actorType?.tabs && getLength(actorType.tabs)
+      ? Object.values(actorType.tabs)
+      : [{ id: 'traits', label: localizer('Traits') }]
+    const configuredTabIds = configuredTabs.map(tab => tab.id)
+    const configuredSheetTabIds = configuredTabs.map(tab => `trait-${tab.id}`)
+
+    if (!configuredSheetTabIds.includes(this._activeSheetTab) && !(this._activeSheetTab === 'notes' && actorType?.hasNotesPage)) {
+      this._activeSheetTab = configuredSheetTabIds[0]
+    }
+
+    const actorTabs = configuredTabs.map(tab => ({
+      ...tab,
+      cssClass: this._activeSheetTab === `trait-${tab.id}` ? 'active' : '',
+      sheetTabId: `trait-${tab.id}`,
+      traitSets: Object.fromEntries(Object.entries(actorType?.traitSets ?? {}).filter(([, traitSet]) => {
+        const tabId = configuredTabIds.includes(traitSet.tabId) ? traitSet.tabId : configuredTabIds[0]
+        return tabId === tab.id
+      }))
+    }))
 
     return {
       ...context,
       actor: this.actor,
+      actorTabs,
       data: this.actor.toObject(false),
+      notesTabClass: this._activeSheetTab === 'notes' ? 'active' : '',
       owner: this.actor.isOwner,
       cssClass: this.isEditable ? 'editable' : 'locked',
       actorTypeOptions: objectMapValues(game.settings.get('cortexprime', 'actorTypes'), val => val.name),
@@ -111,8 +123,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
         event.preventDefault()
         const tabElement = event.currentTarget
         await this._saveCurrentForm()
-        const { tab: tabId, group } = tabElement.dataset
-        this.changeTab(tabId, group)
+        this._activeSheetTab = tabElement.dataset.tab
+        await this.render({ force: true })
       })
     }  
 
@@ -526,7 +538,7 @@ return foundry.applications.api.DialogV2.wait({
         }
 
         if (key === 'traitSets') {
-          return objectMapValues(propValue, ({ hasDescription, id, label, settings, traits }) => {
+          return objectMapValues(propValue, ({ hasDescription, id, label, settings, tabId, traits }) => {
             const matchingSetting = objectFindValue((actorData.traitSets ?? {}), ({ id: matchId }) => matchId === id) ?? {}
 
             return {
@@ -535,6 +547,7 @@ return foundry.applications.api.DialogV2.wait({
               hasDescription,
               id,
               label,
+              tabId,
               shutdown: matchingSetting.shutdown,
               settings,
               traits: objectMapValues(traits ?? {}, trait => {

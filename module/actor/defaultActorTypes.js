@@ -9,12 +9,19 @@ export default {
     id: '_1',
     name: 'Character',
     showProfileImage: true,
+    tabs: {
+      0: {
+        id: '_tab1',
+        label: 'Traits'
+      }
+    },
     traitSets: {
       0: {
         description: null,
         hasDescription: false,
         id: '_11',
         label: 'Distinctions',
+        tabId: '_tab1',
         shutdown: false,
         traits: {
           0: {
@@ -88,6 +95,7 @@ export default {
         hasDescription: false,
         id: '_12',
         label: 'Signature Assets',
+        tabId: '_tab1',
         shutdown: false,
         settings: {
           hasDescription: false,
@@ -113,6 +121,12 @@ export default {
     id: '_2',
     name: 'Scene',
     showProfileImage: false,
+    tabs: {
+      0: {
+        id: '_tab2',
+        label: 'Traits'
+      }
+    },
     simpleTraits: {
       0: {
         dice: {
@@ -137,6 +151,7 @@ export default {
         hasDescription: false,
         id: '_21',
         label: 'Extras',
+        tabId: '_tab2',
         shutdown: false,
         traits: {},
         settings: {
@@ -155,6 +170,7 @@ export default {
         hasDescription: false,
         id: '_22',
         label: 'Minor GMCs',
+        tabId: '_tab2',
         shutdown: false,
         traits: {},
         settings: {
@@ -173,6 +189,7 @@ export default {
         hasDescription: false,
         id: '_23',
         label: 'Mobs',
+        tabId: '_tab2',
         shutdown: false,
         traits: {},
         settings: {
@@ -191,6 +208,7 @@ export default {
         hasDescription: false,
         id: '_24',
         label: 'Bosses/Factions/Orgs',
+        tabId: '_tab2',
         shutdown: false,
         traits: {},
         settings: {

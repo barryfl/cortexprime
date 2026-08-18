@@ -91,13 +91,14 @@ export const removeItem = function (element) {
 export const reorderItem = function (element) {
   element.querySelectorAll('.reorder').forEach(reorderButton => reorderButton.addEventListener('click', async event => {
     event.preventDefault()
+    const reorderTarget = event.currentTarget
     await this._saveCurrentForm()
     const {
       currentIndex,
       newIndex,
       path,
       setting
-    } = event.currentTarget.dataset
+    } = reorderTarget.dataset
 
     let settings = game.settings.get('cortexprime', setting)
     const targetObject = (path || parseInt(path, 10) === 0) ? foundry.utils.getProperty(settings, path) ?? {} : settings

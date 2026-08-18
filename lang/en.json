@@ -3,6 +3,10 @@
   "ActorSettings": "Actor Settings",
   "ActorSettingsH": "Configure this world's actor types.",
   "ActorSheet": "Actor Sheet",
+  "ActorSheetTab": "Actor Sheet Tab",
+  "ActorSheetTabs": "Actor Sheet Tabs",
+  "ActorSheetTabsDescription": "Create and order the tabs shown on this Actor Type's sheet. Assign each Trait Set to one tab.",
+  "AddTab": "Add Tab",
   "ActorType": "Actor Type",
   "ActorTypes": "Actor Types",
   "ActorTypesDescription": "Add, edit, and/or remove different actor types used in your game. Changing the actor type order will change the order that they appear in the dropdown when creating a new actor.",
@@ -108,6 +112,7 @@
   "NewSfx": "New SFX",
   "NewSimpleTrait": "New Simple Trait",
   "NewSubTrait": "New Sub-Trait",
+  "NewTab": "New Tab",
   "NewTrait": "New Trait",
   "NewTraitSet": "New Trait Set",
   "None": "none",
@@ -206,5 +211,6 @@
   "WelcomeTitle": "Welcome to the Cortex Prime System!",
   "WelcomSeen": "Welcome Seen",
   "WelcomSeenHint": "Pops up a brief tutorial message on first load of a world with this system",
+  "CannotRemoveLastTab": "An Actor Type must have at least one Actor Sheet tab.",
   "Width": "Width"
 }

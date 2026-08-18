@@ -37,10 +37,25 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
   async _prepareContext (options) {
     const context = await super._prepareContext(options)
     const breadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs') ?? {}
+    const actorTypes = foundry.utils.deepClone(game.settings.get('cortexprime', 'actorTypes') ?? {})
+
+    for (const actorType of Object.values(actorTypes)) {
+      const tabs = actorType.tabs && getLength(actorType.tabs)
+        ? actorType.tabs
+        : { 0: { id: 'traits', label: localizer('Traits') } }
+      const tabIds = Object.values(tabs).map(tab => tab.id)
+      const defaultTabId = tabIds[0]
+
+      actorType.tabs = tabs
+      actorType.traitSets = objectMapValues(actorType.traitSets ?? {}, traitSet => ({
+        ...traitSet,
+        tabId: tabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
+      }))
+    }
 
     return {
       ...context,
-      actorTypes: game.settings.get('cortexprime', 'actorTypes'),
+      actorTypes,
       breadcrumbs,
       goBack: breadcrumbs[getLength(breadcrumbs ?? {}) - 2]?.target ?? 0
     }
@@ -75,12 +90,14 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
       '.add-simple-trait': this._addSimpleTrait,
       '.add-sfx': this._addSfx,
       '.add-sub-trait': this._addSubTrait,
+      '.add-tab': this._addTab,
       '.add-trait': this._addTrait,
       '.add-trait-set': this._addTraitSet,
       '.breadcrumb:not(.active), .go-back': this._breadcrumbChange,
       '.default-image': this._changeDefaultImage,
       '.duplicate-item': this._duplicateItem,
       '.new-die': this._newDie,
+      '.remove-actor-tab': this._removeTab,
       '.view-change': this._viewChange,
       '[data-action="openActorSettingsHelp"]': this._openActorSettingsHelp
     }
@@ -125,7 +142,13 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         hasNotesPage: true,
         id: `_${Date.now()}`,
         name: localizer('NewActorType'),
-        showProfileImage: true
+        showProfileImage: true,
+        tabs: {
+          0: {
+            id: `_tab${foundry.utils.randomID()}`,
+            label: localizer('Traits')
+          }
+        }
       }
     }
 
@@ -258,17 +281,19 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
   async _addTraitSet (event) {
     event.preventDefault()
+    const { actorType: actorTypeKey } = event.currentTarget.dataset
     await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
-    const { actorType: actorTypeKey } = event.currentTarget.dataset
     const newKey = getLength(source[actorTypeKey]?.traitSets || {})
+    const defaultTabId = Object.values(source[actorTypeKey]?.tabs ?? {})[0]?.id ?? 'traits'
 
     const newTraitSet = {
       [actorTypeKey]: {
         traitSets: {
           [newKey]: {
             id: `_${Date.now()}`,
-            label: localizer('NewTraitSet')
+            label: localizer('NewTraitSet'),
+            tabId: defaultTabId
           }
         }
       }
@@ -276,6 +301,64 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newTraitSet))
     await this.changeView(localizer('NewTraitSet'), `traitSet-${actorTypeKey}-${newKey}`)
+    await this.render({ force: true })
+  }
+
+  async _addTab (event) {
+    event.preventDefault()
+    const { actorType: actorTypeKey } = event.currentTarget.dataset
+    await this._saveCurrentForm()
+    const source = game.settings.get('cortexprime', 'actorTypes')
+    const tabs = source[actorTypeKey]?.tabs ?? {}
+    const newKey = getLength(tabs)
+
+    source[actorTypeKey].tabs = {
+      ...tabs,
+      [newKey]: {
+        id: `_tab${foundry.utils.randomID()}`,
+        label: localizer('NewTab')
+      }
+    }
+
+    await game.settings.set('cortexprime', 'actorTypes', source)
+    await this.render({ force: true })
+  }
+
+  async _removeTab (event) {
+    event.preventDefault()
+    const { actorType: actorTypeKey, tab: tabKey } = event.currentTarget.dataset
+    await this._saveCurrentForm()
+    const source = game.settings.get('cortexprime', 'actorTypes')
+    const actorType = source[actorTypeKey]
+    const tabs = actorType?.tabs ?? {}
+
+    if (getLength(tabs) <= 1) {
+      ui.notifications.warn(localizer('CannotRemoveLastTab'))
+      return
+    }
+
+    const tab = tabs[tabKey]
+    if (!tab) return
+
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: localizer('AreYouSure') },
+      content: `${localizer('Remove')} ${tab.label}?`,
+      yes: { default: false }
+    })
+
+    if (!confirmed) return
+
+    const remainingTabs = objectReindexFilter(tabs, (_, key) => +key !== +tabKey)
+    const defaultTabId = Object.values(remainingTabs)[0].id
+    const remainingTabIds = Object.values(remainingTabs).map(remainingTab => remainingTab.id)
+
+    actorType.tabs = remainingTabs
+    actorType.traitSets = objectMapValues(actorType.traitSets ?? {}, traitSet => ({
+      ...traitSet,
+      tabId: remainingTabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
+    }))
+
+    await game.settings.set('cortexprime', 'actorTypes', source)
     await this.render({ force: true })
   }
 

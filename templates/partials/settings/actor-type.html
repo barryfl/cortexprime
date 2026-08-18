@@ -84,6 +84,47 @@
       <header class="relative-section">
         <div class="section-background-alternate"></div>
         <div class="flex flex-ac flex-jsb py-1">
+          <h3 class="flex-col col-12 section-primary-title-cpt">{{localize 'ActorSheetTabs'}}</h3>
+          <div class="flex-col">
+            <button class="btn btn-primary-cpt btn-icon add-tab" data-actor-type="{{actorTypeIndex}}" type="button" title="{{localize 'AddTab'}}">
+              <i class="fa fa-plus"></i>
+            </button>
+          </div>
+        </div>
+        <div class="separator-cpt"></div>
+        <div class="relative-section pa-2">
+          <div class="section-background-alternate"></div>
+          <p>{{localize 'ActorSheetTabsDescription'}}</p>
+        </div>
+      </header>
+      <ul class="list-style-none px-0 my-0">
+        {{#each actorType.tabs as |tab tabIndex|}}
+          <li class="pa-1 flex flex-ac flex-jsb relative-section">
+            <div class="{{ternary (eq (mod tabIndex 2) 0) 'section-background' 'section-background-alternate'}}"></div>
+            <div class="flex-col flex-row flex-ac col-12">
+              {{> "systems/cortexprime/templates/partials/reorder.html"
+                class="flex-col pa-0"
+                path=(concat ../actorTypeIndex '.tabs')
+                currentIndex=tabIndex
+                setting="actorTypes"
+              }}
+              <input class="input-cpt flex-col col-12" name="actorTypes.{{../actorTypeIndex}}.tabs.{{tabIndex}}.label" type="text" value="{{tab.label}}">
+              <input name="actorTypes.{{../actorTypeIndex}}.tabs.{{tabIndex}}.id" type="hidden" value="{{tab.id}}">
+            </div>
+            <div class="flex-col px-0">
+              <button class="btn btn-icon btn-icon-plain-cpt remove-actor-tab" data-actor-type="{{../actorTypeIndex}}" data-tab="{{tabIndex}}" type="button" title="{{localize 'Remove'}}">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    </section>
+    <div class="separator-cpt"></div>
+    <section>
+      <header class="relative-section">
+        <div class="section-background-alternate"></div>
+        <div class="flex flex-ac flex-jsb py-1">
           <h3 class="flex-col col-12 section-primary-title-cpt">{{localize 'TraitSets'}}</h3>
           <div class="flex-col">
             <button class="btn btn-primary-cpt btn-icon add-trait-set" data-actor-type="{{actorTypeIndex}}" type="button">

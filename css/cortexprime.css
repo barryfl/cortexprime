@@ -1052,10 +1052,6 @@
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   content: "\f522";
 }
-.cortexprime .application.actor-sheet .window-content {
-  overflow-y: auto;
-  overflow-x: hidden;
-}
 .cortexprime #controls ol.cortexprime-controls {
   padding-left: 20px;
 }

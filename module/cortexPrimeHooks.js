@@ -105,9 +105,9 @@ if (rollPrivacy) {
   })
 
   rollPrivacy.prepend(dicePoolButton)
-})
+}
 
-    }
+    })
   })
 
   Hooks.on('ready', async () => {

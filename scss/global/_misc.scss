@@ -11,6 +11,17 @@
   width: 100%;
 }
 
+.identity-section {
+  .profile-image {
+    display: block;
+    width: auto;
+    max-width: 160px;
+    max-height: 220px;
+    object-fit: contain;
+    margin: 0.5rem 0 1rem;
+  }
+}
+
 .hide {
   display: none;
 }

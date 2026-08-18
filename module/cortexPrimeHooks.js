@@ -227,5 +227,3 @@ Hooks.on('renderChatMessageHTML', async (message, html, data) => {
     })
 })
 
-  })
-}

@@ -1,6 +1,6 @@
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+import { CortexPrimeApplication } from '../applications/CortexPrimeApplication.js'
 
-export class CortexPrimeHelp extends HandlebarsApplicationMixin(ApplicationV2) {
+export class CortexPrimeHelp extends CortexPrimeApplication {
   constructor (
     templatePath = 'systems/cortexprime/templates/help/index.html',
     options = {}
@@ -12,8 +12,7 @@ export class CortexPrimeHelp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: 'cortexprime-help',
     window: {
-      title: 'Cortex Prime Help',
-      resizable: true
+      title: 'Cortex Prime Help'
     },
     position: {
       width: 700,

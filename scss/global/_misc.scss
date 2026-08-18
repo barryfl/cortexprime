@@ -47,7 +47,14 @@
   }
 }
 
-.application.actor-sheet {
+&.application {
+  .window-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
+&.application.actor-sheet {
   .window-content {
     overflow: hidden;
     min-height: 0;

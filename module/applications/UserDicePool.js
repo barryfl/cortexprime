@@ -1,6 +1,7 @@
 import { localizer } from '../scripts/foundryHelpers.js'
 import { getLength, objectFilter, objectMapValues, objectReindexFilter } from '../../lib/helpers.js'
 import rollDice from '../scripts/rollDice.js'
+import { CortexPrimeApplication } from './CortexPrimeApplication.js'
 
 const blankPool = {
   customAdd: {
@@ -10,9 +11,7 @@ const blankPool = {
   pool: {}
 }
 
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
-
-export class UserDicePool extends HandlebarsApplicationMixin(ApplicationV2) {
+export class UserDicePool extends CortexPrimeApplication {
   constructor(options = {}) {
     super(options)
     let userDicePool = game.user.getFlag('cortexprime', 'dicePool')
@@ -46,9 +45,6 @@ export class UserDicePool extends HandlebarsApplicationMixin(ApplicationV2) {
       height: 'auto',
       top: 500,
       left: 20
-    },
-    window: {
-      resizable: true
     }
   }
 

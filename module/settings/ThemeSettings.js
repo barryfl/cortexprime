@@ -1,9 +1,8 @@
 import { localizer, setCssVars } from '../scripts/foundryHelpers.js'
 import defaultThemes from '../theme/defaultThemes.js'
+import { CortexPrimeApplication } from '../applications/CortexPrimeApplication.js'
 
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
-
-export default class ThemeSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+export default class ThemeSettings extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
     id: 'theme-settings',
     tag: 'form',
@@ -19,8 +18,7 @@ export default class ThemeSettings extends HandlebarsApplicationMixin(Applicatio
       height: 900,
       top: 200,
       left: 400
-    },
-    window: { resizable: true }
+    }
   }
 
   static PARTS = {

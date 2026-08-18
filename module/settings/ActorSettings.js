@@ -1,9 +1,9 @@
 import { localizer } from '../scripts/foundryHelpers.js'
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
+import { CortexPrimeApplication } from '../applications/CortexPrimeApplication.js'
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 const actorSheetSections = {
   profile: 'ProfileIdentity',
   plotPoints: 'PlotPoints',
@@ -13,7 +13,7 @@ const actorSheetSections = {
 }
 const sheetSectionWidths = ['full', 'half', 'third']
 
-export default class ActorSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+export default class ActorSettings extends CortexPrimeApplication {
   _savePromise = Promise.resolve()
 
   static DEFAULT_OPTIONS = {
@@ -30,8 +30,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
       height: 900,
       top: 200,
       left: 400
-    },
-    window: { resizable: true }
+    }
   }
 
   static PARTS = {

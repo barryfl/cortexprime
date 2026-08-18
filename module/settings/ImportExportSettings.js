@@ -1,9 +1,8 @@
 import defaultActorTypes from "../actor/defaultActorTypes.js"
 import { localizer, setCssVars } from "../scripts/foundryHelpers.js"
+import { CortexPrimeApplication } from '../applications/CortexPrimeApplication.js'
 
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
-
-export default class ImportExportSettings extends HandlebarsApplicationMixin(ApplicationV2) {
+export default class ImportExportSettings extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
     id: 'import-export-settings',
     tag: 'form',
@@ -19,8 +18,7 @@ export default class ImportExportSettings extends HandlebarsApplicationMixin(App
       height: 'auto',
       top: 200,
       left: 400
-    },
-    window: { resizable: true }
+    }
   }
 
   static PARTS = {

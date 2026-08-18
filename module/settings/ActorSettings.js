@@ -91,10 +91,21 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         element.addEventListener('click', event => handler.call(this, event))
       })
     }
+      this.element.addEventListener('change', async event => {
+        if (event.target.classList.contains('die-select')) {
+          return this._onDieChange(event)
+        }
 
-    this.element.addEventListener('change', async event => {
-      if (event.target.classList.contains('die-select')) return this._onDieChange(event)
-      if (event.target.classList.contains('breadcrumb-name-change')) await this._breadcrumbNameChange(event)
+        if (event.target.classList.contains('breadcrumb-name-change')) {
+          return this._breadcrumbNameChange(event)
+        }
+
+        if (event.target.classList.contains('input-checkbox-cpt')) {
+          await this._saveCurrentForm()
+          await this.render({ force: true })
+        }
+      })
+
     })
 
     this.element.querySelectorAll('.die-select').forEach(element => {

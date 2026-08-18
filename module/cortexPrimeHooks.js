@@ -90,21 +90,23 @@ export default () => {
       }
     }
 
-    const $rollPrivacy = $(document.querySelector('#roll-privacy'))
+const rollPrivacy = document.querySelector('#roll-privacy')
 
-    if ($rollPrivacy) {
-      const $dicePoolButton = $(
-        `<button class="control dice-pool-control ui-control fa-solid fa-dice icon" type="button" data-control="dice-pool" aria-label="${game.i18n.localize("DicePool")}">
-          </button>`
-      )
+if (rollPrivacy) {
+  const dicePoolButton = document.createElement('button')
+  dicePoolButton.className =
+    'control dice-pool-control ui-control fa-solid fa-dice icon'
+  dicePoolButton.type = 'button'
+  dicePoolButton.dataset.control = 'dice-pool'
+  dicePoolButton.ariaLabel = game.i18n.localize('DicePool')
 
-      $rollPrivacy
-        .prepend($dicePoolButton)
-      $rollPrivacy
-        .find('.dice-pool-control')
-        .on('click', async () => {
-          await game.cortexprime.UserDicePool.toggle()
-        })
+  dicePoolButton.addEventListener('click', async () => {
+    await game.cortexprime.UserDicePool.toggle()
+  })
+
+  rollPrivacy.prepend(dicePoolButton)
+}
+
     }
   })
 
@@ -113,86 +115,117 @@ export default () => {
     await game.cortexprime.UserDicePool.initPool()
   })
 
-  Hooks.on('renderChatMessageHTML', async (message, html, data) => {
-    const $html = $(html)
-    const $rollResult = $html.find('.roll-result').first()
+Hooks.on('renderChatMessageHTML', async (message, html, data) => {
+  const root = html instanceof HTMLElement ? html : html?.[0]
+  if (!root) return
 
-    if ($rollResult) {
-      const $chatMessage = $rollResult.closest('.chat-message')
-      
-      $chatMessage
-        .addClass('roll-message')
-        .prepend('<div class="message-background"></div><div class="message-image"></div>')
+  const rollResult = root.querySelector('.roll-result')
+  if (!rollResult) return
 
-      const $messageHeader = $chatMessage.find('.message-header').first()
+  const chatMessage = rollResult.closest('.chat-message')
 
-      $messageHeader.children().wrapAll('<div class="message-header-content"></div>')
-      $messageHeader.prepend('<div class="message-header-image"></div><div class="message-header-background"></div>')
+  if (chatMessage) {
+    chatMessage.classList.add('roll-message')
+    chatMessage.insertAdjacentHTML(
+      'afterbegin',
+      '<div class="message-background"></div><div class="message-image"></div>'
+    )
 
-      const $dice = $rollResult.find('.die')
+    const messageHeader = chatMessage.querySelector('.message-header')
 
-      for await (const die of $dice) {
-        const $die = $(die)
-        const data = $die.data()
+    if (messageHeader) {
+      const headerContent = document.createElement('div')
+      headerContent.className = 'message-header-content'
 
-        const { dieRating, type, value: number } = data
+      while (messageHeader.firstChild) {
+        headerContent.appendChild(messageHeader.firstChild)
+      }
 
-        const html = await foundry.applications.handlebars.renderTemplate(`systems/cortexprime/templates/partials/dice/d${dieRating}.html`, {
+      messageHeader.appendChild(headerContent)
+
+      messageHeader.insertAdjacentHTML(
+        'afterbegin',
+        '<div class="message-header-image"></div><div class="message-header-background"></div>'
+      )
+    }
+  }
+
+  const dice = rollResult.querySelectorAll('.die')
+
+  for (const die of dice) {
+    const { dieRating, type, value: number } = die.dataset
+
+    const dieHtml =
+      await foundry.applications.handlebars.renderTemplate(
+        `systems/cortexprime/templates/partials/dice/d${dieRating}.html`,
+        {
           type,
           number
-        })
-        $die.html(html)
-      }
+        }
+      )
 
-      $html
-        .find('.source-header')
-        .click(function () {
-          const $source = $(this)
-          $source
-            .find('.fa')
-            .toggleClass('fa-chevron-down fa-chevron-up')
-          $source
-            .siblings('.source-content')
-            .toggleClass('hide')
-        })
+    die.innerHTML = dieHtml
+  }
 
-      const getPool = $html => {
-        return $html.find('.source').get().reduce((sources, source) => {
-          const $source = $(source)
-          return {
-            ...sources,
-            [$source.data('source')]: $source
-              .find('.dice-tag')
-              .get()
-              .reduce((dice, die, dieIndex) => {
-                const $die = $(die)
-                return {
-                  ...dice,
-                  [dieIndex]: {
-                    label: $die.data('label'),
-                    value: $die.find('.die').get()
-                      .reduce((diceValues, dieValue, dieValueIndex) => {
-                        return {
-                          ...diceValues,
-                          [dieValueIndex]: $(dieValue).data('die-rating')
-                        }
-                      }, {})
-                  }
-                }
-              }, {})
-          }
-        }, {})
-      }
-      $rollResult.find('.re-roll').click(async (event) => {
-        event.preventDefault()
-        const pool = getPool($rollResult)
-        await rollDice(pool)
-      })
-      $rollResult.find('.send-to-pool').click(async (event) => {
-        event.preventDefault()
-        const pool = getPool($rollResult)
-        await game.cortexprime.UserDicePool._setPool(pool)
-      })
-    }
+  root.querySelectorAll('.source-header').forEach(sourceHeader => {
+    sourceHeader.addEventListener('click', () => {
+      sourceHeader
+        .querySelector('.fa')
+        ?.classList.toggle('fa-chevron-down')
+
+      sourceHeader
+        .querySelector('.fa')
+        ?.classList.toggle('fa-chevron-up')
+
+      const sourceContent =
+        sourceHeader.parentElement?.querySelector('.source-content')
+
+      sourceContent?.classList.toggle('hide')
+    })
+  })
+
+  const getPool = element => {
+    return [...element.querySelectorAll('.source')]
+      .reduce((sources, source) => {
+        sources[source.dataset.source] =
+          [...source.querySelectorAll('.dice-tag')]
+            .reduce((dice, die, dieIndex) => {
+              dice[dieIndex] = {
+                label: die.dataset.label,
+                value: [...die.querySelectorAll('.die')]
+                  .reduce((diceValues, dieValue, dieValueIndex) => {
+                    diceValues[dieValueIndex] =
+                      dieValue.dataset.dieRating
+
+                    return diceValues
+                  }, {})
+              }
+
+              return dice
+            }, {})
+
+        return sources
+      }, {})
+  }
+
+  rollResult
+    .querySelector('.re-roll')
+    ?.addEventListener('click', async event => {
+      event.preventDefault()
+
+      const pool = getPool(rollResult)
+      await rollDice(pool)
+    })
+
+  rollResult
+    .querySelector('.send-to-pool')
+    ?.addEventListener('click', async event => {
+      event.preventDefault()
+
+      const pool = getPool(rollResult)
+      await game.cortexprime.UserDicePool._setPool(pool)
+    })
+})
+
   })
 }

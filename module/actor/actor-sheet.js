@@ -27,7 +27,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     classes: ['cortexprime', 'sheet', 'actor', 'actor-sheet'],
     window: {
         resizable: true
-    }.
+    },
     actions: {
       actorTypeConfirm: function (event, target) { return this._actorTypeConfirm(event, target) },
       addAsset: function (event, target) { return this._addAsset(event, target) },

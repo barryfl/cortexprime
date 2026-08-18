@@ -105,7 +105,7 @@ if (rollPrivacy) {
   })
 
   rollPrivacy.prepend(dicePoolButton)
-}
+})
 
     }
   })

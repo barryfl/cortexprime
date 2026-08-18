@@ -12,6 +12,7 @@ import {
 
 const { HandlebarsApplicationMixin } = foundry.applications.api
 const { ActorSheetV2 } = foundry.applications.sheets
+const actorSheetSectionKeys = ['profile', 'plotPoints', 'simpleTraits', 'assets', 'complications']
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _savePromise = Promise.resolve()
@@ -72,6 +73,11 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       : [{ id: 'traits', label: localizer('Traits') }]
     const configuredTabIds = configuredTabs.map(tab => tab.id)
     const configuredSheetTabIds = configuredTabs.map(tab => `trait-${tab.id}`)
+    const defaultTabId = configuredTabIds[0]
+    const sectionTabs = Object.fromEntries(actorSheetSectionKeys.map(section => [
+      section,
+      configuredTabIds.includes(actorType?.sectionTabs?.[section]) ? actorType.sectionTabs[section] : defaultTabId
+    ]))
 
     if (!configuredSheetTabIds.includes(this._activeSheetTab) && !(this._activeSheetTab === 'notes' && actorType?.hasNotesPage)) {
       this._activeSheetTab = configuredSheetTabIds[0]
@@ -80,9 +86,10 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const actorTabs = configuredTabs.map(tab => ({
       ...tab,
       cssClass: this._activeSheetTab === `trait-${tab.id}` ? 'active' : '',
+      sections: Object.fromEntries(actorSheetSectionKeys.map(section => [section, sectionTabs[section] === tab.id])),
       sheetTabId: `trait-${tab.id}`,
       traitSets: Object.fromEntries(Object.entries(actorType?.traitSets ?? {}).filter(([, traitSet]) => {
-        const tabId = configuredTabIds.includes(traitSet.tabId) ? traitSet.tabId : configuredTabIds[0]
+        const tabId = configuredTabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
         return tabId === tab.id
       }))
     }))

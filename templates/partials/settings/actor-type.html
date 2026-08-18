@@ -119,6 +119,19 @@
           </li>
         {{/each}}
       </ul>
+      <div class="separator-cpt"></div>
+      <div class="relative-section pa-2">
+        <div class="section-background-alternate"></div>
+        <h3 class="section-secondary-title-cpt">{{localize 'PredefinedSectionPlacement'}}</h3>
+        {{#each actorType.sheetSections as |section|}}
+          <label class="input-label-cpt mt-1">{{section.label}}</label>
+          <select class="input-cpt mb-2" name="actorTypes.{{../actorTypeIndex}}.sectionTabs.{{section.key}}">
+            {{#each ../actorType.tabs as |tab|}}
+              <option value="{{tab.id}}" {{#if (eq section.tabId tab.id)}}selected{{/if}}>{{tab.label}}</option>
+            {{/each}}
+          </select>
+        {{/each}}
+      </div>
     </section>
     <div class="separator-cpt"></div>
     <section>

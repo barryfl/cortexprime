@@ -1,6 +1,6 @@
-<div class="flex-row">
-  {{#if data.hasAssets}}
-    <section class="flex-col col-6">
+<div>
+  {{#if (and data.hasAssets showAssets)}}
+    <section class="mb-4">
       <div class="section-cpt">
         <div class="section-image"></div>
         <div class="section-content">
@@ -95,8 +95,8 @@
       </div>
     </section>
   {{/if}}
-  {{#if data.hasComplications}}
-    <section class="flex-col col-6">
+  {{#if (and data.hasComplications showComplications)}}
+    <section class="mb-4">
       <div class="section-cpt">
         <div class="section-image"></div>
         <div class="section-content">

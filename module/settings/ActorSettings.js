@@ -4,6 +4,13 @@ import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduc
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+const actorSheetSections = {
+  profile: 'ProfileIdentity',
+  plotPoints: 'PlotPoints',
+  simpleTraits: 'SimpleTraits',
+  assets: 'Assets',
+  complications: 'Complications'
+}
 
 export default class ActorSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   _savePromise = Promise.resolve()
@@ -47,6 +54,14 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
       const defaultTabId = tabIds[0]
 
       actorType.tabs = tabs
+      actorType.sectionTabs = objectMapValues(actorSheetSections, (_, section) => (
+        tabIds.includes(actorType.sectionTabs?.[section]) ? actorType.sectionTabs[section] : defaultTabId
+      ))
+      actorType.sheetSections = Object.entries(actorSheetSections).map(([key, label]) => ({
+        key,
+        label: localizer(label),
+        tabId: actorType.sectionTabs[key]
+      }))
       actorType.traitSets = objectMapValues(actorType.traitSets ?? {}, traitSet => ({
         ...traitSet,
         tabId: tabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId
@@ -136,6 +151,7 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const newKey = getLength(source ?? {})
+    const defaultTabId = `_tab${foundry.utils.randomID()}`
 
     const newActorType = {
       [newKey]: {
@@ -143,9 +159,10 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
         id: `_${Date.now()}`,
         name: localizer('NewActorType'),
         showProfileImage: true,
+        sectionTabs: objectMapValues(actorSheetSections, () => defaultTabId),
         tabs: {
           0: {
-            id: `_tab${foundry.utils.randomID()}`,
+            id: defaultTabId,
             label: localizer('Traits')
           }
         }
@@ -353,6 +370,9 @@ export default class ActorSettings extends HandlebarsApplicationMixin(Applicatio
     const remainingTabIds = Object.values(remainingTabs).map(remainingTab => remainingTab.id)
 
     actorType.tabs = remainingTabs
+    actorType.sectionTabs = objectMapValues(actorSheetSections, (_, section) => (
+      remainingTabIds.includes(actorType.sectionTabs?.[section]) ? actorType.sectionTabs[section] : defaultTabId
+    ))
     actorType.traitSets = objectMapValues(actorType.traitSets ?? {}, traitSet => ({
       ...traitSet,
       tabId: remainingTabIds.includes(traitSet.tabId) ? traitSet.tabId : defaultTabId

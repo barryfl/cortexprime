@@ -8,6 +8,13 @@ export default {
     hasPlotPoints: true,
     id: '_1',
     name: 'Character',
+    sectionTabs: {
+      profile: '_tab1',
+      plotPoints: '_tab1',
+      simpleTraits: '_tab1',
+      assets: '_tab1',
+      complications: '_tab1'
+    },
     showProfileImage: true,
     tabs: {
       0: {
@@ -120,6 +127,13 @@ export default {
     hasPlotPoints: true,
     id: '_2',
     name: 'Scene',
+    sectionTabs: {
+      profile: '_tab2',
+      plotPoints: '_tab2',
+      simpleTraits: '_tab2',
+      assets: '_tab2',
+      complications: '_tab2'
+    },
     showProfileImage: false,
     tabs: {
       0: {

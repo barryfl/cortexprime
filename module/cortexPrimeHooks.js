@@ -108,7 +108,7 @@ if (rollPrivacy) {
 }
 
     })
-  })
+  }
 
   Hooks.on('ready', async () => {
     game.cortexprime.UserDicePool = new UserDicePool()

@@ -304,13 +304,16 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
 async _getConsumableDiceSelection (options, label) {
-  const content = await foundry.applications.handlebars.renderTemplate(
-    'systems/cortexprime/templates/dialog/consumable-dice.html',
-    {
-      options,
-      isOwner: game.user.isOwner
-    }
-  )
+    const contentHtml = await foundry.applications.handlebars.renderTemplate(
+      'systems/cortexprime/templates/dialog/consumable-dice.html',
+      {
+        options,
+        isOwner: game.user.isOwner
+      }
+    )
+
+const content = document.createElement('div')
+content.insertAdjacentHTML('beforeend', contentHtml)
 
 return foundry.applications.api.DialogV2.wait({
   window: {

@@ -6,13 +6,14 @@ const clone = value => {
   return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, clone(child)]))
 }
 
-const sourceMetadata = (sourcePath, formPath, collectionPath, formCollectionPath, sourceKey, compatibility = false) => ({
+const sourceMetadata = (sourcePath, formPath, collectionPath, formCollectionPath, sourceKey, compatibility = false, valueTypeExplicit = false) => ({
   collectionPath,
   compatibility,
   formCollectionPath,
   formPath,
   sourceKey,
-  sourcePath
+  sourcePath,
+  valueTypeExplicit
 })
 
 const normalizeValueType = valueType => valueType === 'dice'
@@ -110,6 +111,7 @@ export function normalizeActorType (input, {
       for (const [traitKey, trait] of Object.entries(traitSet[target] ?? {})) {
         const collectionPath = `${traitSetSourcePath}.${target}`
         const formCollectionPath = `${traitSetFormPath}.${target}`
+        const valueTypeExplicit = Object.hasOwn(trait, 'valueType')
         trait.valueType = normalizeValueType(trait.valueType)
         trait.valueSettings = {
           ...(trait.valueSettings ?? {}),
@@ -120,7 +122,9 @@ export function normalizeActorType (input, {
           `${formCollectionPath}.${traitKey}`,
           collectionPath,
           formCollectionPath,
-          traitKey
+          traitKey,
+          false,
+          valueTypeExplicit
         )
       }
     }
@@ -154,6 +158,7 @@ export function normalizeActorType (input, {
         legacySourceCollectionPath,
         legacyFormCollectionPath,
         legacyKey,
+        true,
         true
       ),
       hasDescription: legacyTrait.hasDescription ?? false,

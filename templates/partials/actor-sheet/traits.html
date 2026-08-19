@@ -22,8 +22,8 @@
             </span>
           {{/if}}
           <span
-            class="flex-col flex-g-1{{ternary (and (eq trait.valueType 'die') (and (and (not ../traitSetShutdown) (not trait.shutdown)) (and ../settings.hasDice trait.dice.value.[0]))) ' add-to-pool' ''}}{{ternary trait.shutdown ' shutdown' ''}}"
-            {{#if (and (eq trait.valueType 'die') (and (and (not ../traitSetShutdown) (not trait.shutdown)) (and ../settings.hasDice trait.dice.value.[0])))}}data-action="addToPool"{{/if}}
+            class="flex-col flex-g-1{{ternary (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])) ' add-to-pool' ''}}{{ternary trait.shutdown ' shutdown' ''}}"
+            {{#if (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0]))}}data-action="addToPool"{{/if}}
             data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
             data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}>
             {{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}
@@ -31,7 +31,7 @@
               <span class="fa fa-dice"></span>
             {{/if}}
           </span>
-          {{#if (and (eq trait.valueType 'die') ../settings.hasDice)}}
+          {{#if (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice))}}
             {{#if (or (not ../owner) (or ../traitSetShutdown trait.shutdown))}}
               <div class="pl-0 flex-col flex-s-1">
                 <div class="flex flex-wrap flex-ac">

@@ -49,7 +49,7 @@
               {{/if}}
               <div class="flex-col flex-s-1 px-0{{ternary (or ../custom ../settings.hasLabel) ' max-50' ''}}">
                 <div class="flex flex-ac">
-                  {{#if (and (eq trait.valueType 'die') ../settings.hasDice)}}
+                  {{#if (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice))}}
                     {{> "systems/cortexprime/templates/partials/dice/select.html"
                       addToPool=true
                       consumable=trait.valueSettings.consumableDice

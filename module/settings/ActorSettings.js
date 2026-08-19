@@ -149,6 +149,11 @@ export default class ActorSettings extends CortexPrimeApplication {
 
 
     for (const [selector, handler] of Object.entries(clickHandlers)) {
+      if (typeof handler !== 'function') {
+        console.error(`ActorSettings click handler for "${selector}" is not defined.`)
+        continue
+      }
+
       this.element.querySelectorAll(selector).forEach(element => {
         element.addEventListener('click', event => handler.call(this, event))
       })
@@ -210,8 +215,8 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _addDescriptor(event) {
     event.preventDefault()
-    await this._saveCurrentForm()
     const { path } = event.currentTarget.dataset
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentDescriptors = foundry.utils.getProperty(source, path) || {}
 
@@ -230,8 +235,8 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _addSfx(event) {
     event.preventDefault()
-    await this._saveCurrentForm()
     const { path } = event.currentTarget.dataset
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentSfx = foundry.utils.getProperty(source, path) || {}
 
@@ -251,8 +256,8 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _addSubTrait(event) {
     event.preventDefault()
-    await this._saveCurrentForm()
     const { path } = event.currentTarget.dataset
+    await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
     const currentSubTraits = foundry.utils.getProperty(source, path) || {}
 
@@ -272,9 +277,9 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _addTrait (event) {
     event.preventDefault()
+    const { actorType, path, traitSet } = event.currentTarget.dataset
     await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
-    const { actorType, path, traitSet } = event.currentTarget.dataset
     const currentTraits = foundry.utils.getProperty(source, `${path}.${traitSet}.traits`)
     const newKey = getLength(currentTraits || {})
 
@@ -432,10 +437,9 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _breadcrumbChange (event) {
     event.preventDefault()
+    const { to: target } = event.currentTarget.dataset
     await this._saveCurrentForm()
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
-
-    const { to: target } = event.currentTarget.dataset
 
     const targetKey = +objectFindKey(currentBreadcrumbs, breadcrumb => breadcrumb.target === target)
 
@@ -457,12 +461,13 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _breadcrumbNameChange (event) {
     const { target } = event.target.dataset
+    const { value } = event.target
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
     await game.settings.set('cortexprime', 'actorBreadcrumbs', {
       ...objectMapValues(currentBreadcrumbs, breadcrumb => {
         if (breadcrumb.target === target) {
-          breadcrumb.name = event.target.value
+          breadcrumb.name = value
         }
 
         return breadcrumb
@@ -560,9 +565,9 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _newDie (event) {
     event.preventDefault()
+    const { target: path } = event.currentTarget.dataset
     await this._saveCurrentForm()
     const source = game.settings.get('cortexprime', 'actorTypes')
-    const { target: path } = event.currentTarget.dataset
     const currentDice = foundry.utils.getProperty(source, path) || {}
     const values = currentDice.value ?? {}
     const newKey = getLength(values)
@@ -575,10 +580,10 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _onDieChange (event) {
     event.preventDefault()
-    await this._saveCurrentForm()
-    const source = game.settings.get('cortexprime', 'actorTypes')
     const { target, key: targetKey } = event.target.dataset
     const targetValue = event.target.value
+    await this._saveCurrentForm()
+    const source = game.settings.get('cortexprime', 'actorTypes')
     const currentDiceValues = foundry.utils.getProperty(source, `${target}.value`) ?? {}
 
     if (parseInt(targetValue, 10) === 0) {
@@ -596,9 +601,9 @@ export default class ActorSettings extends CortexPrimeApplication {
     event.preventDefault()
 
     if (event.button === 2) {
+      const { target, key: targetKey } = event.currentTarget.dataset
       await this._saveCurrentForm()
       const source = game.settings.get('cortexprime', 'actorTypes')
-      const { target, key: targetKey } = event.currentTarget.dataset
       const currentDiceValues = foundry.utils.getProperty(source, `${target}.value`) ?? {}
 
       foundry.utils.setProperty(source, `${target}.value`, objectReindexFilter(currentDiceValues, (_, index) => parseInt(index, 10) !== parseInt(targetKey, 10)))
@@ -611,9 +616,14 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _viewChange (event) {
     event.preventDefault()
-    await this._saveCurrentForm()
     const { name, to } = event.currentTarget.dataset
+    await this._saveCurrentForm()
     await this.changeView(name, to)
+  }
+
+  _openActorSettingsHelp (event) {
+    event.preventDefault()
+    return new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)
   }
 
   async close (options) {

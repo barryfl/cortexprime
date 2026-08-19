@@ -46,6 +46,25 @@ test('supports mixed legacy and unified data', () => {
   assert.equal(Object.values(normalized.traitSets).filter(traitSet => traitSet._compatibility).length, 1)
 })
 
+test('distinguishes explicit die traits from legacy untyped traits when hasDice is false', () => {
+  const normalized = normalizeActorType({
+    traitSets: {
+      0: {
+        id: '_set',
+        settings: { hasDice: false },
+        traits: {
+          0: { id: '_legacy', name: 'Legacy', dice: { value: { 0: '6' } } },
+          1: { id: '_typed', name: 'Typed', valueType: 'die', dice: { value: { 0: '8' } } }
+        }
+      }
+    }
+  })
+
+  assert.equal(normalized.traitSets[0].traits[0].valueType, 'die')
+  assert.equal(normalized.traitSets[0].traits[0]._source.valueTypeExplicit, false)
+  assert.equal(normalized.traitSets[0].traits[1]._source.valueTypeExplicit, true)
+})
+
 test('preserves raw legacy representation for import/export', () => {
   const imported = {
     id: '_imported',

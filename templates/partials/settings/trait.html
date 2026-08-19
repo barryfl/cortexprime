@@ -43,7 +43,7 @@
         <textarea class="input-cpt" name="{{concat fieldPath '.description'}}">{{trait.description}}</textarea>
       </div>
     {{/if}}
-    {{#if (and (eq trait.valueType 'die') settings.hasDice)}}
+    {{#if (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit settings.hasDice))}}
       {{> "systems/cortexprime/templates/partials/settings/value-types/dice.html"
         consumableOption=trait._source.compatibility
         data=trait

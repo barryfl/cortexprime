@@ -2,15 +2,11 @@ import { localizer } from '../scripts/foundryHelpers.js'
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { CortexPrimeApplication } from '../applications/CortexPrimeApplication.js'
 import { normalizeActorType } from '../actor/normalizeActorType.js'
+import { isPredefinedSectionAvailable, isSectionPlacementEnabled, PREDEFINED_ACTOR_SHEET_SECTIONS, updateBreadcrumbName, withSectionPlacementEnabled } from '../actor/actorTypeSections.js'
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 
-const actorSheetSections = {
-  profile: 'ProfileIdentity',
-  plotPoints: 'PlotPoints',
-  assets: 'Assets',
-  complications: 'Complications'
-}
+const actorSheetSections = Object.fromEntries(PREDEFINED_ACTOR_SHEET_SECTIONS.map(({ id, label }) => [id, label]))
 const sheetSectionWidths = ['full', 'half', 'third']
 
 export default class ActorSettings extends CortexPrimeApplication {
@@ -59,20 +55,23 @@ export default class ActorSettings extends CortexPrimeApplication {
       const tabIds = Object.values(tabs).map(tab => tab.id)
       const defaultTabId = tabIds[0]
       const traitSets = Object.entries(actorType.traitSets ?? {})
+      const availablePredefinedSections = PREDEFINED_ACTOR_SHEET_SECTIONS.filter(section => isPredefinedSectionAvailable(actorType, section.id))
+      const leadingSections = availablePredefinedSections.filter(section => ['profile', 'plotPoints'].includes(section.id))
+      const trailingSections = availablePredefinedSections.filter(section => ['assets', 'complications'].includes(section.id))
       const naturalSections = [
-        ...Object.entries(actorSheetSections).slice(0, 2).map(([id, label], order) => ({ id, label: localizer(label), layoutId: id, order })),
+        ...leadingSections.map(({ id, label }, order) => ({ id, label: localizer(label), layoutId: id, order })),
         ...traitSets.map(([traitSetIndex, traitSet], index) => ({
           id: traitSet.id,
           label: traitSet.label || localizer('TraitSet'),
           layoutId: traitSet._compatibility?.layoutId ?? traitSet.id,
-          order: index + 2,
+          order: index + leadingSections.length,
           traitSetIndex
         })),
-        ...Object.entries(actorSheetSections).slice(2).map(([id, label], index) => ({
+        ...trailingSections.map(({ id, label }, index) => ({
           id,
           label: localizer(label),
           layoutId: id,
-          order: traitSets.length + index + 2
+          order: traitSets.length + index + leadingSections.length
         }))
       ]
 
@@ -84,6 +83,7 @@ export default class ActorSettings extends CortexPrimeApplication {
           : actorType.sectionTabs?.[section.id]
 
         return [section.id, {
+          enabled: isSectionPlacementEnabled(current),
           order: Number.isFinite(Number(current.order)) ? Number(current.order) : section.order,
           tabId: tabIds.includes(current.tabId ?? legacyTabId) ? (current.tabId ?? legacyTabId) : defaultTabId,
           width: sheetSectionWidths.includes(current.width) ? current.width : 'full'
@@ -143,6 +143,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       '.new-die': this._newDie,
       '.move-sheet-section': this._moveSheetSection,
       '.remove-actor-tab': this._removeTab,
+      '.toggle-sheet-section': this._toggleSheetSection,
       '.view-change': this._viewChange,
       '[data-action="openActorSettingsHelp"]': this._openActorSettingsHelp
     }
@@ -163,8 +164,8 @@ export default class ActorSettings extends CortexPrimeApplication {
           return this._onDieChange(event)
         }
 
-        if (event.target.classList.contains('breadcrumb-name-change')) {
-          return this._breadcrumbNameChange(event)
+        if (event.target.classList.contains('breadcrumb-name-change') || event.target.classList.contains('rerender-on-change')) {
+          return this._committedNameChange(event)
         }
 
         if (event.target.classList.contains('input-checkbox-cpt') || event.target.classList.contains('value-type-select')) {
@@ -194,11 +195,9 @@ export default class ActorSettings extends CortexPrimeApplication {
         id: `_${Date.now()}`,
         name: localizer('NewActorType'),
         showProfileImage: true,
-        sectionLayout: Object.fromEntries(Object.keys(actorSheetSections).map((section, order) => [section, {
-          order,
-          tabId: defaultTabId,
-          width: 'full'
-        }])),
+        sectionLayout: {
+          profile: { enabled: true, order: 0, tabId: defaultTabId, width: 'full' }
+        },
         tabs: {
           0: {
             id: defaultTabId,
@@ -313,7 +312,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     const defaultTabId = Object.values(source[actorTypeKey]?.tabs ?? {})[0]?.id ?? 'traits'
     const traitSetId = `_${Date.now()}`
     const sectionLayout = source[actorTypeKey]?.sectionLayout ?? {}
-    const nextOrder = getLength(source[actorTypeKey]?.traitSets ?? {}) + 2
+    const nextOrder = getLength(source[actorTypeKey]?.traitSets ?? {}) + 1 + (source[actorTypeKey]?.hasPlotPoints ? 1 : 0)
 
     for (const layout of Object.values(sectionLayout)) {
       if (Number(layout.order) >= nextOrder) layout.order = Number(layout.order) + 1
@@ -332,7 +331,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     }
 
     newTraitSet[actorTypeKey].sectionLayout = {
-      [traitSetId]: { order: nextOrder, tabId: defaultTabId, width: 'full' }
+      [traitSetId]: { enabled: true, order: nextOrder, tabId: defaultTabId, width: 'full' }
     }
 
     await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newTraitSet))
@@ -413,12 +412,14 @@ export default class ActorSettings extends CortexPrimeApplication {
     const actorType = source[actorTypeKey]
     const layout = actorType?.sectionLayout ?? {}
     const validSectionIds = new Set([
-      ...Object.keys(actorSheetSections),
+      ...PREDEFINED_ACTOR_SHEET_SECTIONS
+        .filter(section => isPredefinedSectionAvailable(actorType, section.id))
+        .map(section => section.id),
       ...(actorType?.simpleTraits && getLength(actorType.simpleTraits) ? ['simpleTraits'] : []),
       ...Object.values(actorType?.traitSets ?? {}).map(traitSet => traitSet.id)
     ])
     const orderedIds = Object.entries(layout)
-      .filter(([id]) => validSectionIds.has(id))
+      .filter(([id, sectionLayout]) => validSectionIds.has(id) && isSectionPlacementEnabled(sectionLayout))
       .sort(([, a], [, b]) => Number(a.order) - Number(b.order))
       .map(([id]) => id)
     const currentIndex = orderedIds.indexOf(sectionId)
@@ -430,6 +431,20 @@ export default class ActorSettings extends CortexPrimeApplication {
     const currentOrder = layout[sectionId].order
     layout[sectionId].order = layout[targetId].order
     layout[targetId].order = currentOrder
+
+    await game.settings.set('cortexprime', 'actorTypes', source)
+    await this.render({ force: true })
+  }
+
+  async _toggleSheetSection (event) {
+    event.preventDefault()
+    const { actorType: actorTypeKey, enabled, sectionId } = event.currentTarget.dataset
+    await this._saveCurrentForm()
+    const source = game.settings.get('cortexprime', 'actorTypes')
+    const actorType = source[actorTypeKey]
+    if (!actorType) return
+
+    source[actorTypeKey] = withSectionPlacementEnabled(actorType, sectionId, enabled === 'true')
 
     await game.settings.set('cortexprime', 'actorTypes', source)
     await this.render({ force: true })
@@ -459,20 +474,17 @@ export default class ActorSettings extends CortexPrimeApplication {
     await this.render({ force: true })
   }
 
-  async _breadcrumbNameChange (event) {
+  async _committedNameChange (event) {
     const { target } = event.target.dataset
     const { value } = event.target
-    const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
+    await this._saveCurrentForm()
 
-    await game.settings.set('cortexprime', 'actorBreadcrumbs', {
-      ...objectMapValues(currentBreadcrumbs, breadcrumb => {
-        if (breadcrumb.target === target) {
-          breadcrumb.name = value
-        }
+    if (target) {
+      const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
+      await game.settings.set('cortexprime', 'actorBreadcrumbs', updateBreadcrumbName(currentBreadcrumbs, target, value))
+    }
 
-        return breadcrumb
-      })
-    })
+    await this.render({ force: true })
   }
 
 
@@ -549,6 +561,7 @@ export default class ActorSettings extends CortexPrimeApplication {
         source[actorTypeKey].sectionLayout = {
           ...layout,
           [newId]: {
+            enabled: layout[id]?.enabled !== false,
             order: nextOrder,
             tabId: layout[id]?.tabId ?? Object.values(source[actorTypeKey].tabs ?? {})[0]?.id ?? 'traits',
             width: layout[id]?.width ?? 'full'

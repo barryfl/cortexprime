@@ -5,6 +5,7 @@
 import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objectSome } from '../../lib/helpers.js'
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { mergeActorTypeSettings, normalizeActorType } from './normalizeActorType.js'
+import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
   removeItems,
@@ -13,7 +14,6 @@ import {
 
 const { HandlebarsApplicationMixin } = foundry.applications.api
 const { ActorSheetV2 } = foundry.applications.sheets
-const actorSheetSectionKeys = ['profile', 'plotPoints', 'assets', 'complications']
 const actorSheetSectionWidths = ['full', 'half', 'third']
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
@@ -82,19 +82,22 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const configuredSheetTabIds = configuredTabs.map(tab => `trait-${tab.id}`)
     const defaultTabId = configuredTabIds[0]
     const traitSets = Object.entries(actorType?.traitSets ?? {})
+    const availablePredefinedSections = PREDEFINED_ACTOR_SHEET_SECTIONS.filter(section => isPredefinedSectionAvailable(actorType, section.id))
+    const leadingSections = availablePredefinedSections.filter(section => ['profile', 'plotPoints'].includes(section.id))
+    const trailingSections = availablePredefinedSections.filter(section => ['assets', 'complications'].includes(section.id))
     const naturalSections = [
-      ...actorSheetSectionKeys.slice(0, 2).map((id, order) => ({ id, order, type: id })),
+      ...leadingSections.map(({ id }, order) => ({ id, order, type: id })),
       ...traitSets.map(([traitSetIndex, traitSet], index) => ({
         id: traitSet.id,
-        order: index + 2,
+        order: index + leadingSections.length,
         traitSet,
         traitSetIndex,
         traitSets: { [traitSetIndex]: traitSet },
         type: 'traitSet'
       })),
-      ...actorSheetSectionKeys.slice(2).map((id, index) => ({
+      ...trailingSections.map(({ id }, index) => ({
         id,
-        order: traitSets.length + index + 2,
+        order: traitSets.length + index + leadingSections.length,
         type: id
       }))
     ]
@@ -104,10 +107,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
       return {
         ...section,
-        enabled: section.type === 'profile' || section.type === 'traitSet' ||
-          (section.type === 'plotPoints' && actorType?.hasPlotPoints) ||
-          (section.type === 'assets' && actorType?.hasAssets) ||
-          (section.type === 'complications' && actorType?.hasComplications),
+        enabled: shouldRenderSection(actorType, section),
         order: Number.isFinite(Number(layout.order)) ? Number(layout.order) : section.order,
         tabId: configuredTabIds.includes(layout.tabId ?? legacyTabId) ? (layout.tabId ?? legacyTabId) : defaultTabId,
         width: actorSheetSectionWidths.includes(layout.width) ? layout.width : 'full'
@@ -121,7 +121,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const actorTabs = configuredTabs.map(tab => ({
       ...tab,
       cssClass: this._activeSheetTab === `trait-${tab.id}` ? 'active' : '',
-      sections: sheetSections.filter(section => section.enabled && section.tabId === tab.id),
+      sections: filterRenderableSections(actorType, sheetSections).filter(section => section.tabId === tab.id),
       sheetTabId: `trait-${tab.id}`,
     }))
 

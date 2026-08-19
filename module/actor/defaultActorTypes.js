@@ -15,12 +15,12 @@ export default {
       complications: '_tab1'
     },
     sectionLayout: {
-      profile: { order: 0, tabId: '_tab1', width: 'full' },
-      plotPoints: { order: 1, tabId: '_tab1', width: 'full' },
-      _11: { order: 2, tabId: '_tab1', width: 'full' },
-      _12: { order: 3, tabId: '_tab1', width: 'full' },
-      assets: { order: 4, tabId: '_tab1', width: 'full' },
-      complications: { order: 5, tabId: '_tab1', width: 'full' }
+      profile: { enabled: true, order: 0, tabId: '_tab1', width: 'full' },
+      plotPoints: { enabled: true, order: 1, tabId: '_tab1', width: 'full' },
+      _11: { enabled: true, order: 2, tabId: '_tab1', width: 'full' },
+      _12: { enabled: true, order: 3, tabId: '_tab1', width: 'full' },
+      assets: { enabled: true, order: 4, tabId: '_tab1', width: 'full' },
+      complications: { enabled: true, order: 5, tabId: '_tab1', width: 'full' }
     },
     showProfileImage: true,
     tabs: {
@@ -144,15 +144,15 @@ export default {
       complications: '_tab2'
     },
     sectionLayout: {
-      profile: { order: 0, tabId: '_tab2', width: 'full' },
-      plotPoints: { order: 1, tabId: '_tab2', width: 'full' },
-      _25: { order: 2, tabId: '_tab2', width: 'full' },
-      _21: { order: 3, tabId: '_tab2', width: 'full' },
-      _22: { order: 4, tabId: '_tab2', width: 'full' },
-      _23: { order: 5, tabId: '_tab2', width: 'full' },
-      _24: { order: 6, tabId: '_tab2', width: 'full' },
-      assets: { order: 7, tabId: '_tab2', width: 'full' },
-      complications: { order: 8, tabId: '_tab2', width: 'full' }
+      profile: { enabled: true, order: 0, tabId: '_tab2', width: 'full' },
+      plotPoints: { enabled: true, order: 1, tabId: '_tab2', width: 'full' },
+      _25: { enabled: true, order: 2, tabId: '_tab2', width: 'full' },
+      _21: { enabled: true, order: 3, tabId: '_tab2', width: 'full' },
+      _22: { enabled: true, order: 4, tabId: '_tab2', width: 'full' },
+      _23: { enabled: true, order: 5, tabId: '_tab2', width: 'full' },
+      _24: { enabled: true, order: 6, tabId: '_tab2', width: 'full' },
+      assets: { enabled: true, order: 7, tabId: '_tab2', width: 'full' },
+      complications: { enabled: true, order: 8, tabId: '_tab2', width: 'full' }
     },
     showProfileImage: false,
     tabs: {

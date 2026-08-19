@@ -1257,6 +1257,11 @@
   font-size: var(--cp-body-font-size, 15px);
   font-weight: var(--cp-body-font-weight, 400);
   height: 100%;
+  isolation: isolate;
+  position: relative;
+}
+.cortexprime .sheet-cpt .sheet-background, .cortexprime .sheet-cpt .sheet-image {
+  pointer-events: none;
 }
 .cortexprime .sheet-cpt .sheet-background {
   background-color: var(--cp-sheet-background-color, #dedede);

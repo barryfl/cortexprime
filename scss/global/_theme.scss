@@ -5,6 +5,12 @@
     font-size: var(--cp-body-font-size, 15px);
     font-weight: var(--cp-body-font-weight, 400);
     height: 100%;
+    isolation: isolate;
+    position: relative;
+
+    .sheet-background, .sheet-image {
+      pointer-events: none;
+    }
 
     .sheet-background {
       background-color: var(--cp-sheet-background-color, #dedede);

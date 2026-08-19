@@ -10,6 +10,7 @@ import { appendCustomTrait, canCreateCustomTrait, isCustomTraitSetPath } from '.
 import { findSuppressibleTrait, prepareTraitSuppressions, withTraitRestored, withTraitSuppressed } from './traitSuppression.js'
 import { changeResourceValue, initializeActorTypeResources, isResourceTraitPath, pruneImplicitResourceSettings } from './resourceTraits.js'
 import { ScrollPreservation } from '../applications/scrollPreservation.js'
+import { createActorTraitProvenance } from '../applications/dicePoolRecipes.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
@@ -372,7 +373,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     }
 
     if (getLength(value)) {
-      await game.cortexprime.UserDicePool._addTraitToPool(this.actor.name, label, value)
+      const provenance = createActorTraitProvenance(this.actor, path, localizer('SimpleTraits'))
+      await game.cortexprime.UserDicePool._addTraitToPool(this.actor.name, label, value, provenance)
     }
   }
 

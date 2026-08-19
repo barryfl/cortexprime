@@ -113,6 +113,7 @@ if (rollPrivacy) {
 
   Hooks.on('ready', async () => {
     game.cortexprime.UserDicePool = new UserDicePool()
+    game.cortexprime.loadSavedPool = savedPoolId => game.cortexprime.UserDicePool.loadSavedPool(savedPoolId)
     await game.cortexprime.UserDicePool.initPool()
   })
 

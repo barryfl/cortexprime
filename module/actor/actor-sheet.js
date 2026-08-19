@@ -8,6 +8,7 @@ import { normalizeActorType } from './normalizeActorType.js'
 import { syncActorWithActorType } from './syncActorType.js'
 import { appendCustomTrait, canCreateCustomTrait, isCustomTraitSetPath } from './customTraits.js'
 import { changeResourceValue, initializeActorTypeResources, isResourceTraitPath, pruneImplicitResourceSettings } from './resourceTraits.js'
+import { ScrollPreservation } from '../applications/scrollPreservation.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
@@ -21,7 +22,7 @@ const actorSheetSectionWidths = ['full', 'half', 'third']
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _savePromise = Promise.resolve()
-  _preservedSheetScrollTop = null
+  _sheetScrollPreservation = new ScrollPreservation('.sheet-body')
 
   get actor () {
     return super.actor
@@ -158,6 +159,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   async _saveForm (event, form, submittedFormData) {
     if (!form || event?.target?.classList?.contains('die-select') || event?.target?.classList?.contains('pp-number-field')) return
 
+    this._preserveSheetScroll()
     const updateData = foundry.utils.deepClone(submittedFormData.object)
     pruneImplicitResourceSettings(updateData, this.actor.toObject(false))
 
@@ -168,23 +170,19 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   async _saveCurrentForm () {
     if (this.form) await this.submit()
     await this._savePromise
+    this._preserveSheetScroll()
   }
 
   _preserveSheetScroll () {
-    const sheetBody = this.element?.querySelector('.sheet-body')
-    this._preservedSheetScrollTop = sheetBody?.scrollTop ?? 0
+    return this._sheetScrollPreservation.preserve(this.element)
   }
 
   _restoreSheetScroll () {
-    if (this._preservedSheetScrollTop === null) return
+    return this._sheetScrollPreservation.restore(this.element)
+  }
 
-    const sheetBody = this.element?.querySelector('.sheet-body')
-
-    if (sheetBody) {
-      sheetBody.scrollTop = this._preservedSheetScrollTop
-    }
-
-    this._preservedSheetScrollTop = null
+  _discardPreservedSheetScroll () {
+    this._sheetScrollPreservation.clear()
   }
 
 
@@ -197,6 +195,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
         event.preventDefault()
         const tabElement = event.currentTarget
         await this._saveCurrentForm()
+        this._discardPreservedSheetScroll()
         this._activeSheetTab = tabElement.dataset.tab
         await this.render({ force: true })
       })
@@ -216,6 +215,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     for (const select of this.element.querySelectorAll('.actor-value-type-select, .resource-image-display-select')) {
       select.addEventListener('change', async () => {
         await this._saveCurrentForm()
+        this._preserveSheetScroll()
         await this.render({ force: true })
       })
     }
@@ -232,6 +232,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   async _actorTypeConfirm (event) {
     event.preventDefault()
     await this._saveCurrentForm()
+    this._discardPreservedSheetScroll()
     const actorTypes = game.settings.get('cortexprime', 'actorTypes')
     const actorTypeIndex = this.element.querySelector('.actor-type-select')?.value
 
@@ -404,6 +405,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
   async _closeTraitSetEdit(event) {
     await this._saveCurrentForm()
+    this._discardPreservedSheetScroll()
     await this.actor.update({
       ['system.actorType.traitSetEdit']: null
     })
@@ -429,6 +431,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     event.preventDefault()
     const { path } = target.dataset
     await this._saveCurrentForm()
+    this._discardPreservedSheetScroll()
     const traitPath = path?.replace(/\.valueSettings\.image$/, '')
     if (!this.isEditable || !this.actor.isOwner || !isResourceTraitPath(traitPath)) return
 
@@ -436,7 +439,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       type: 'image',
       current: foundry.utils.getProperty(this.actor, path) ?? '',
       callback: async image => {
+        this._preserveSheetScroll()
         await this.actor.update({ [path]: image })
+        this._preserveSheetScroll()
         await this.render({ force: true })
       }
     })
@@ -614,10 +619,12 @@ return foundry.applications.api.DialogV2.wait({
   }
 
   async _resetDataPoint(path, target, value) {
+    this._preserveSheetScroll()
     await this.actor.update({
       [`${path}.${target}`]: foundry.data.operators.ForcedDeletion.create()
     })
 
+    this._preserveSheetScroll()
     await this.actor.update({
       [`${path}.${target}`]: value
     })
@@ -625,6 +632,7 @@ return foundry.applications.api.DialogV2.wait({
 
   async _traitSetEdit(event, target = event.currentTarget) {
     await this._saveCurrentForm()
+    this._discardPreservedSheetScroll()
     const { traitSet } = target.dataset
 
     await this.actor.update({
@@ -649,6 +657,7 @@ return foundry.applications.api.DialogV2.wait({
 
   async close (options = {}) {
     await this._saveCurrentForm()
+    this._discardPreservedSheetScroll()
     return super.close(options)
   }
   async _editProfileImage (event) {
@@ -658,6 +667,7 @@ return foundry.applications.api.DialogV2.wait({
     type: 'image',
     current: this.actor.img,
     callback: async imagePath => {
+      this._preserveSheetScroll()
       await this.actor.update({ img: imagePath })
     }
   })

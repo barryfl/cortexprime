@@ -53,6 +53,7 @@ export class CortexPrimeHelp extends CortexPrimeApplication {
             this.templatePath =
               `systems/cortexprime/templates/help/${file}`
 
+            this._discardPreservedScroll()
             await this.render({ force: true })
           })
         })

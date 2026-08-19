@@ -110,7 +110,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _addTraitToPool (source, label, value) {
@@ -122,7 +122,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _clearDicePool (event) {
@@ -132,7 +132,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', blankPool)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _clearSource (event, actionTarget = event.currentTarget) {
@@ -146,7 +146,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _onDieChange (event) {
@@ -164,7 +164,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _onDieRemove (event) {
@@ -183,7 +183,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
       await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-      await this.render({ force: true })
+      await this._renderPreservingScroll()
     }
   }
 
@@ -201,7 +201,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _removePoolTrait (event, actionTarget = event.currentTarget) {
@@ -219,7 +219,7 @@ export class UserDicePool extends CortexPrimeApplication {
     await game.user.setFlag('cortexprime', 'dicePool', null)
     await game.user.setFlag('cortexprime', 'dicePool', currentDicePool)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _resetCustomPoolTrait (event) {
@@ -236,7 +236,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _setPool (pool) {
@@ -248,7 +248,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
     await game.user.setFlag('cortexprime', 'dicePool', currentDice)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _rollDicePool (event, actionTarget = event.currentTarget) {

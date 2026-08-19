@@ -114,6 +114,7 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   async _saveForm (event, form, submittedFormData) {
     if (!form || event?.target?.classList?.contains('die-select')) return
+    this._preserveScroll()
     const submittedData = submittedFormData.object
     const actorTypes = foundry.utils.deepClone(
       submittedData.actorTypes ?? foundry.utils.expandObject(submittedData).actorTypes ?? {}
@@ -131,6 +132,7 @@ export default class ActorSettings extends CortexPrimeApplication {
   async _saveCurrentForm () {
     if (this.form) await this.submit()
     await this._savePromise
+    this._preserveScroll()
   }
 
   async _onRender (context, options) {
@@ -178,7 +180,7 @@ export default class ActorSettings extends CortexPrimeApplication {
 
         if (event.target.classList.contains('input-checkbox-cpt') || event.target.classList.contains('value-type-select')) {
           await this._saveCurrentForm()
-          await this.render({ force: true })
+          await this._renderPreservingScroll()
         }
       })
 
@@ -237,7 +239,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       })
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _addSfx(event) {
@@ -258,7 +260,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       })
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _addSubTrait(event) {
@@ -279,7 +281,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       })
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _addTrait (event) {
@@ -365,7 +367,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     }
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _removeTab (event) {
@@ -410,7 +412,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     }))
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _moveSheetSection (event) {
@@ -442,7 +444,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     layout[targetId].order = currentOrder
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _toggleSheetSection (event) {
@@ -456,7 +458,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     source[actorTypeKey] = withSectionPlacementEnabled(actorType, sectionId, enabled === 'true')
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _syncExistingActors (event) {
@@ -489,6 +491,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     event.preventDefault()
     const { to: target } = event.currentTarget.dataset
     await this._saveCurrentForm()
+    this._discardPreservedScroll()
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
     const targetKey = +objectFindKey(currentBreadcrumbs, breadcrumb => breadcrumb.target === target)
@@ -519,7 +522,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       await game.settings.set('cortexprime', 'actorBreadcrumbs', updateBreadcrumbName(currentBreadcrumbs, target, value))
     }
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
 
@@ -535,6 +538,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     type: 'image',
     current: currentImage,
     callback: async newImage => {
+      this._preserveScroll()
       source[actorTypeIndex].defaultImage = newImage
 
       await game.settings.set(
@@ -543,7 +547,7 @@ export default class ActorSettings extends CortexPrimeApplication {
         source
       )
 
-      await this.render({ force: true })
+      await this._renderPreservingScroll()
     }
   })
 
@@ -554,6 +558,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     event.preventDefault()
     const { path } = target.dataset
     await this._saveCurrentForm()
+    this._discardPreservedScroll()
     if (!/^[^.]+\.traitSets\.[^.]+\.traits\.[^.]+\.valueSettings\.image$/.test(path ?? '')) return
 
     const source = game.settings.get('cortexprime', 'actorTypes')
@@ -561,16 +566,18 @@ export default class ActorSettings extends CortexPrimeApplication {
       type: 'image',
       current: foundry.utils.getProperty(source, path) ?? '',
       callback: async image => {
+        this._preserveScroll()
         const latest = game.settings.get('cortexprime', 'actorTypes')
         foundry.utils.setProperty(latest, path, image)
         await game.settings.set('cortexprime', 'actorTypes', latest)
-        await this.render({ force: true })
+        await this._renderPreservingScroll()
       }
     })
     await picker.render(true)
   }
 
   async changeView (name, target) {
+    this._discardPreservedScroll()
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
     await game.settings.set('cortexprime', 'actorBreadcrumbs', {
@@ -628,7 +635,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     }
 
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _newDie (event) {
@@ -643,7 +650,7 @@ export default class ActorSettings extends CortexPrimeApplication {
 
     foundry.utils.setProperty(source, `${path}.value`, { ...values, [newKey]: newValue })
     await game.settings.set('cortexprime', 'actorTypes', source)
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _onDieChange (event) {
@@ -662,7 +669,7 @@ export default class ActorSettings extends CortexPrimeApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', source)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _onDieRemove (event) {
@@ -678,7 +685,7 @@ export default class ActorSettings extends CortexPrimeApplication {
 
       await game.settings.set('cortexprime', 'actorTypes', source)
 
-      await this.render({ force: true })
+      await this._renderPreservingScroll()
     }
   }
 

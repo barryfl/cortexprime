@@ -11,7 +11,7 @@ export const collapseToggle = function (element) {
     }
 
     await this._saveCurrentForm()
-    await this.render({ force: true })
+    await (this._renderPreservingScroll?.() ?? this.render({ force: true }))
   }))
 }
 
@@ -71,6 +71,7 @@ export const removeItem = function (element) {
         await game.settings.set('cortexprime', setting, settings)
 
         if (setting === 'actorTypes' && !stayOnPage) {
+          this._discardPreservedScroll?.()
           const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')
 
           const breadcrumbsValue = objectReduce(currentBreadcrumbs, (acc, value, key, length) => {
@@ -87,7 +88,8 @@ export const removeItem = function (element) {
           await game.settings.set('cortexprime', 'actorBreadcrumbs', breadcrumbsValue)
         }
 
-        await this.render({ force: true })
+        if (setting === 'actorTypes' && !stayOnPage) await this.render({ force: true })
+        else await (this._renderPreservingScroll?.() ?? this.render({ force: true }))
       }
     }
   }))
@@ -134,6 +136,6 @@ export const reorderItem = function (element) {
     }
 
     await game.settings.set('cortexprime', setting, settings)
-    await this.render({ force: true })
+    await (this._renderPreservingScroll?.() ?? this.render({ force: true }))
   }))
 }

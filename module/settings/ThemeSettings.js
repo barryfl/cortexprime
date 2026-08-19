@@ -55,6 +55,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
 
   async _saveForm (event, form = this.form, submittedFormData) {
     if (!form) return
+    if (event?.type === 'change') this._preserveScroll()
     const formData = this._getFormData(form, submittedFormData)
     const expandedFormData = foundry.utils.expandObject(formData)
     const currentThemes = game.settings.get('cortexprime', 'themes') ?? {}
@@ -72,7 +73,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
 
     setCssVars(theme)
 
-    if (event?.type === 'change') await this.render({ force: true })
+    if (event?.type === 'change') await this._renderPreservingScroll()
   }
 
   async _onRender (context, options) {
@@ -95,11 +96,12 @@ export default class ThemeSettings extends CortexPrimeApplication {
       type: 'image',
       current: currentImage,
       async callback (newImage) {
+        _this._preserveScroll()
         source.currentSettings[targetSetting] = newImage
 
         await game.settings.set('cortexprime', 'themes', source)
 
-        await _this.render({ force: true })
+        await _this._renderPreservingScroll()
       }
     })
 
@@ -112,9 +114,10 @@ export default class ThemeSettings extends CortexPrimeApplication {
     const source = game.settings.get('cortexprime', 'themes')
     source.currentSettings[targetSetting] = null
 
+    this._preserveScroll()
     await game.settings.set('cortexprime', 'themes', source)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _refreshPreset (event) {
@@ -124,6 +127,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
       ? source.custom
       : source.list[source.current]
 
+    this._preserveScroll()
     await game.settings.set('cortexprime', 'themes', source)
 
     const themes = game.settings.get('cortexprime', 'themes')
@@ -131,7 +135,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
 
     setCssVars(theme)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _saveAsCustomPreset (event) {
@@ -140,6 +144,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
     source.current = 'custom'
     source.custom = source.currentSettings
 
+    this._preserveScroll()
     await game.settings.set('cortexprime', 'themes', source)
 
     const themes = game.settings.get('cortexprime', 'themes')
@@ -147,7 +152,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
 
     setCssVars(theme)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
   async _updatePresets (event) {
@@ -163,6 +168,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
       ? source.custom
       : source.list[source.current]
 
+    this._preserveScroll()
     await game.settings.set('cortexprime', 'themes', source)
 
     const themes = game.settings.get('cortexprime', 'themes')
@@ -170,7 +176,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
 
     setCssVars(theme)
 
-    await this.render({ force: true })
+    await this._renderPreservingScroll()
   }
 
 }

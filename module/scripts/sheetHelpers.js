@@ -13,10 +13,12 @@ export const addNewDataPoint = async function (data, path, value) {
 }
 
 export const resetDataPoint = async function (path, target, value) {
+  this._preserveSheetScroll?.()
   await this.actor.update({
     [`${path}.${target}`]: foundry.data.operators.ForcedDeletion.create()
   })
 
+  this._preserveSheetScroll?.()
   await this.actor.update({
     [`${path}.${target}`]: value
   })

@@ -6,7 +6,7 @@ export default class ImportExportSettings extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
     id: 'import-export-settings',
     tag: 'form',
-    classes: ['cortexprime', 'import-export-settings'],
+    classes: ['cortexprime', 'cortexprime-application', 'import-export-settings'],
     form: {
       closeOnSubmit: false,
       submitOnChange: true,

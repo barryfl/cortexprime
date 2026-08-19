@@ -27,10 +27,6 @@
   margin: 0;
   font-family: "Roboto", sans-serif;
 }
-.cortexprime .application.dialog.dice-picker .form-footer {
-  position: relative;
-  z-index: 10;
-}
 .cortexprime .application.actor-settings .window-content {
   overflow-y: auto;
   min-height: 0;
@@ -1080,7 +1076,7 @@
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   content: "\f522";
 }
-.cortexprime.application .window-content {
+.cortexprime.application.cortexprime-application .window-content {
   overflow-x: hidden;
   overflow-y: auto;
 }

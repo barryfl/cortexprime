@@ -19,7 +19,7 @@ export default class ActorSettings extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
     id: 'actor-settings',
     tag: 'form',
-    classes: ['cortexprime', 'actor-settings'],
+    classes: ['cortexprime', 'cortexprime-application', 'actor-settings'],
     form: {
       closeOnSubmit: false,
       submitOnChange: true,

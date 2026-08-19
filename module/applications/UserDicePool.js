@@ -26,7 +26,7 @@ export class UserDicePool extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
     id: 'user-dice-pool',
     tagName: 'form',
-    classes: ['cortexprime', 'user-dice-pool'],
+    classes: ['cortexprime', 'cortexprime-application', 'user-dice-pool'],
     actions: {
       addCustomTrait: function (event, target) { return this._addCustomTraitToPool(event, target) },
       clearPool: function (event, target) { return this._clearDicePool(event, target) },

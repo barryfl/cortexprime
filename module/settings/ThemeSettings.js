@@ -6,7 +6,7 @@ export default class ThemeSettings extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
     id: 'theme-settings',
     tag: 'form',
-    classes: ['cortexprime', 'theme-settings'],
+    classes: ['cortexprime', 'cortexprime-application', 'theme-settings'],
     form: {
       closeOnSubmit: false,
       submitOnChange: true,

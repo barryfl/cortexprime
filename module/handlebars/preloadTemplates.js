@@ -48,7 +48,7 @@ export const preloadHandlebarsTemplates = async function () {
     'settings/value-types/descriptors',
     'settings/value-types/dice',
     'settings/value-types/number',
-    'settings/value-types/resouce',
+    'settings/value-types/resource',
     'settings/value-types/sfx',
     'settings/value-types/sub-traits',
     'settings/value-types/text',

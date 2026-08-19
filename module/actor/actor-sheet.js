@@ -21,6 +21,7 @@ const actorSheetSectionWidths = ['full', 'half', 'third']
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _savePromise = Promise.resolve()
+  _preservedSheetScrollTop = null
 
   get actor () {
     return super.actor
@@ -169,6 +170,24 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     await this._savePromise
   }
 
+  _preserveSheetScroll () {
+    const sheetBody = this.element?.querySelector('.sheet-body')
+    this._preservedSheetScrollTop = sheetBody?.scrollTop ?? 0
+  }
+
+  _restoreSheetScroll () {
+    if (this._preservedSheetScrollTop === null) return
+
+    const sheetBody = this.element?.querySelector('.sheet-body')
+
+    if (sheetBody) {
+      sheetBody.scrollTop = this._preservedSheetScrollTop
+    }
+
+    this._preservedSheetScrollTop = null
+  }
+
+
   /** @override */
   async _onRender (context, options) {
     await super._onRender(context, options)
@@ -182,6 +201,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
         await this.render({ force: true })
       })
     }  
+
+    this._restoreSheetScroll()
 
     for (const select of this.element.querySelectorAll('.die-select')) {
       select.addEventListener('change', event => this._onDieChange(event))
@@ -396,6 +417,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
     const trait = foundry.utils.getProperty(this.actor, traitPath)
     if (trait?.valueType !== 'resource') return
+
+    this._preserveSheetScroll()
 
     await this.actor.update({
       [`${traitPath}.resource.value`]: changeResourceValue(trait, direction)

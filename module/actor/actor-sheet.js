@@ -12,6 +12,7 @@ import { changeResourceValue, initializeActorTypeResources, isResourceTraitPath,
 import { ScrollPreservation } from '../applications/scrollPreservation.js'
 import { createActorTraitProvenance } from '../applications/dicePoolRecipes.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
+import { changeTemporaryStep, collectAdjustedTraitPaths, findTraitByFormPath, getEffectiveTraitDice } from './temporaryTraitSteps.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
   removeItems,
@@ -50,6 +51,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       addTrait: function (event, target) { return this._addTrait(event, target) },
       closeTraitSetEdit: function (event) { return this._closeTraitSetEdit(event) },
       changeResource: function (event, target) { return this._changeResource(event, target) },
+      changeTemporaryDie: function (event, target) { return this._changeTemporaryDie(event, target) },
       newDie: function (event, target) { return this._newDie(event, target) },
       removeItem: function (event, target) { return removeItems.call(this, event, target) },
       restoreTrait: function (event, target) { return this._restoreTrait(event, target) },
@@ -60,7 +62,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       updateActorSettings: function (event) { return this._updateActorSettings(event) },
       editProfileImage: function (event, target) {return this._editProfileImage(event, target)},
       openHelp: function () {new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)},
-      resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) }
+      resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) },
+      resetTemporaryTraitSteps: function (event) { return this._resetTemporaryTraitSteps(event) }
     },
     form: {
       closeOnSubmit: false,
@@ -152,6 +155,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       actorTabs,
       data,
       editable: this.actor.isOwner && this.isEditable,
+      hasTemporaryTraitSteps: collectAdjustedTraitPaths(actorType).length > 0,
       notesTabClass: this._activeSheetTab === 'notes' ? 'active' : '',
       owner: this.actor.isOwner,
       cssClass: this.isEditable ? 'editable' : 'locked',
@@ -356,15 +360,18 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   async _addToPool (event, target = event.currentTarget) {
-    await this._saveCurrentForm()
     const { consumable, path, label } = target.dataset
-    let value = foundry.utils.getProperty(this.actor, `${path}.value`)
+    await this._saveCurrentForm()
+    const actorType = normalizeActorType(this.actor.system.actorType, { legacyLabel: localizer('SimpleTraits') })
+    const trait = path?.endsWith('.dice') ? findTraitByFormPath(actorType, path.slice(0, -5)) : null
+    const baseValue = foundry.utils.getProperty(this.actor, `${path}.value`)
+    let value = trait ? getEffectiveTraitDice(trait) : foundry.utils.getProperty(this.actor, `${path}.value`)
 
     if (consumable) {
       const selectedDice = await this._getConsumableDiceSelection(value, label)
 
       if (selectedDice.remove?.length) {
-        const newValue = objectReindexFilter(value, (_, key) => !selectedDice.remove.map(x => parseInt(x, 10)).includes(parseInt(key, 10)))
+        const newValue = objectReindexFilter(baseValue, (_, key) => !selectedDice.remove.map(x => parseInt(x, 10)).includes(parseInt(key, 10)))
 
         await this._resetDataPoint(path, 'value', newValue)
       }
@@ -430,6 +437,52 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     await this.actor.update({
       [`${traitPath}.resource.value`]: changeResourceValue(trait, direction)
     })
+  }
+
+  async _changeTemporaryDie (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { direction, traitPath } = target.dataset
+    await this._saveCurrentForm()
+    if (!this.isEditable || !this.actor.isOwner || !traitPath) return false
+
+    const actorType = normalizeActorType(this.actor.system.actorType, { legacyLabel: localizer('SimpleTraits') })
+    const trait = findTraitByFormPath(actorType, traitPath)
+    if (trait?.valueType !== 'die') return false
+
+    const temporaryStep = changeTemporaryStep(trait, direction)
+    this._preserveSheetScroll()
+    await this.actor.update({
+      [`${traitPath}.temporaryStep`]: temporaryStep === 0
+        ? foundry.data.operators.ForcedDeletion.create()
+        : temporaryStep
+    })
+    return true
+  }
+
+  async _resetTemporaryTraitSteps (event) {
+    event.preventDefault()
+    await this._saveCurrentForm()
+    if (!this.isEditable || !this.actor.isOwner) return false
+
+    const actorType = normalizeActorType(this.actor.system.actorType, { legacyLabel: localizer('SimpleTraits') })
+    const traitPaths = collectAdjustedTraitPaths(actorType)
+    if (!traitPaths.length) return false
+
+    if (traitPaths.length > 1) {
+      const confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: { title: localizer('ResetTemporaryTraitSteps') },
+        content: `<p>${game.i18n.format('ResetTemporaryTraitStepsConfirmation', { count: traitPaths.length })}</p>`,
+        yes: { default: false }
+      })
+      if (!confirmed) return false
+    }
+
+    this._preserveSheetScroll()
+    await this.actor.update(Object.fromEntries(traitPaths.map(path => [
+      `${path}.temporaryStep`,
+      foundry.data.operators.ForcedDeletion.create()
+    ])))
+    return true
   }
 
   async _resourceImagePicker (event, target = event.currentTarget) {

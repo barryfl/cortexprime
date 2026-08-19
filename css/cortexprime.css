@@ -1143,6 +1143,30 @@
   margin-left: 0;
   max-width: 1.625rem;
 }
+.cortexprime .temporary-die-controls {
+  gap: 0.1875rem;
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+  margin-top: 0.125rem;
+}
+.cortexprime .temporary-die-controls .btn-small {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+.cortexprime .temporary-die-controls .temporary-die-adjustment,
+.cortexprime .temporary-die-controls .temporary-die-effective,
+.cortexprime .temporary-die-controls .temporary-die-base {
+  white-space: nowrap;
+}
+.cortexprime .temporary-die-controls .temporary-die-adjustment {
+  font-weight: bold;
+}
+.cortexprime .temporary-die-controls .temporary-die-base {
+  font-size: 0.8em;
+  opacity: 0.75;
+}
 .cortexprime .btn {
   background-color: transparent;
   border: none;

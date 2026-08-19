@@ -1,4 +1,5 @@
 import { prepareResourceView } from './resourceTraits.js'
+import { prepareTemporaryDieView } from './temporaryTraitSteps.js'
 
 const VALUE_TYPES = new Set(['die', 'number', 'resource', 'text'])
 
@@ -49,6 +50,7 @@ export function normalizeActorType (input, {
           consumableDice: trait.valueSettings?.consumableDice ?? traitSet.settings?.diceConsumable ?? traitSet.settings?.consumableDice ?? false
         }
         if (trait.valueType === 'resource') trait._resourceView = prepareResourceView(trait)
+        if (trait.valueType === 'die') trait._temporaryDieView = prepareTemporaryDieView(trait)
         trait._source = sourceMetadata(
           `${collectionPath}.${traitKey}`,
           `${formCollectionPath}.${traitKey}`,
@@ -82,7 +84,7 @@ export function normalizeActorType (input, {
     const valueType = normalizeValueType(legacyValueType)
     const id = legacyTrait.id ?? legacyTrait.dice?.id ?? `legacy-simple-trait:${actorType.id ?? 'actor-type'}:${legacyKey}`
 
-    return [legacyKey, {
+    const normalizedTrait = {
       ...legacyTrait,
       _source: sourceMetadata(
         `${legacySourceCollectionPath}.${legacyKey}`,
@@ -101,7 +103,9 @@ export function normalizeActorType (input, {
         consumableDice: legacyTrait.settings?.consumableDice ?? legacyTrait.settings?.diceConsumable ?? false
       },
       valueType
-    }]
+    }
+    if (valueType === 'die') normalizedTrait._temporaryDieView = prepareTemporaryDieView(normalizedTrait)
+    return [legacyKey, normalizedTrait]
   }))
 
   traitSets[syntheticKey] = {

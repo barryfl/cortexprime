@@ -3,6 +3,7 @@ export const preloadHandlebarsTemplates = async function () {
     'actor-sheet/identity',
     'actor-sheet/suppressed-traits',
     'actor-sheet/temporary-traits',
+    'actor-sheet/temporary-die',
     'actor-sheet/traits',
     'actor-sheet/traits-edit',
     'actor-sheet/trait-set-edit',

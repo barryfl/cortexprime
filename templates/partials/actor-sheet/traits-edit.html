@@ -69,6 +69,11 @@
                       label=(ternary (and ../settings.hasLabel trait.label) trait.label trait.name)
                       selectName=(concat trait._source.formPath '.dice')
                     }}
+                    {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-die.html"
+                      editable=../editable
+                      traitPath=trait._source.formPath
+                      view=trait._temporaryDieView
+                    }}
                   {{/if}}
                   <div>
                     <button class="btn btn-icon btn-icon-plain-cpt toggle-item" data-action="toggleItem"

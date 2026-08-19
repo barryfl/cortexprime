@@ -39,6 +39,12 @@
              <button type="button" data-action="openHelp">
                {{localize 'Help'}}
              </button>
+             {{#if (and editable hasTemporaryTraitSteps)}}
+               <button class="btn btn-icon btn-icon-plain-cpt" type="button" data-action="resetTemporaryTraitSteps"
+                 title="{{localize 'ResetTemporaryTraitSteps'}}">
+                 <i class="fa fa-rotate-left"></i>
+               </button>
+             {{/if}}
            </nav>
         </div>
         <div class="sheet-body">

@@ -11,6 +11,18 @@ const hasOwn = (object, key) => Object.hasOwn(object ?? {}, key)
 const identity = (value, key) => value?.id ?? `key:${key}`
 const legacySimpleIdentity = (value, key) => value?.id ?? value?.dice?.id ?? `key:${key}`
 
+const initializeTemplateTrait = templateTrait => {
+  const trait = initializeResourceTrait(templateTrait)
+  delete trait.temporaryStep
+  return trait
+}
+
+const initializeLegacyTemplateTrait = templateTrait => {
+  const trait = clone(templateTrait)
+  delete trait.temporaryStep
+  return trait
+}
+
 const mergeOrderedUnion = (actorCollection, templateCollection, mergeMatch, getIdentity = identity, createTemplate = clone) => {
   const actorEntries = Object.entries(actorCollection ?? {})
   const usedActorKeys = new Set()
@@ -78,6 +90,8 @@ const mergePresetTrait = (actorTrait, templateTrait, preserveActorLabel = false)
   for (const stateKey of ['edit', 'hidden', 'shutdown']) {
     if (hasOwn(actorTrait, stateKey)) merged[stateKey] = actorTrait[stateKey]
   }
+  if (hasOwn(actorTrait, 'temporaryStep')) merged.temporaryStep = actorTrait.temporaryStep
+  else delete merged.temporaryStep
 
   merged.dice = mergeCurrentValue(actorTrait?.dice, templateTrait?.dice)
   merged.number = mergeCurrentValue(actorTrait?.number, templateTrait?.number)
@@ -113,7 +127,7 @@ const mergeTraitSet = (actorSet, templateSet) => {
     templateSet?.traits,
     (actorTrait, templateTrait) => mergePresetTrait(actorTrait, templateTrait, templateSet?.settings?.hasLabel),
     identity,
-    initializeResourceTrait
+    initializeTemplateTrait
   )
   return merged
 }
@@ -123,6 +137,8 @@ const mergeLegacySimpleTrait = (actorTrait, templateTrait) => {
   for (const stateKey of ['edit', 'hidden']) {
     if (hasOwn(actorTrait, stateKey)) merged[stateKey] = actorTrait[stateKey]
   }
+  if (hasOwn(actorTrait, 'temporaryStep')) merged.temporaryStep = actorTrait.temporaryStep
+  else delete merged.temporaryStep
   merged.dice = mergeCurrentValue(actorTrait?.dice, templateTrait?.dice)
   merged.number = mergeCurrentValue(actorTrait?.number, templateTrait?.number)
   merged.text = mergeCurrentValue(actorTrait?.text, templateTrait?.text)
@@ -154,7 +170,8 @@ export function mergeActorTypeConfiguration (actorTypeDataInput, actorTypeTempla
       actorTypeData.simpleTraits,
       actorTypeTemplate.simpleTraits,
       mergeLegacySimpleTrait,
-      legacySimpleIdentity
+      legacySimpleIdentity,
+      initializeLegacyTemplateTrait
     )
   }
 

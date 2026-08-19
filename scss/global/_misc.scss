@@ -125,3 +125,28 @@ input[type="color"][data-edit][data-edit] {
   margin-left: 0;
   max-width: toRem(26px);
 }
+
+.temporary-die-controls {
+  gap: toRem(3px);
+  justify-content: flex-end;
+  margin-top: toRem(2px);
+
+  .btn-small {
+    flex: 0 0 auto;
+  }
+
+  .temporary-die-adjustment,
+  .temporary-die-effective,
+  .temporary-die-base {
+    white-space: nowrap;
+  }
+
+  .temporary-die-adjustment {
+    font-weight: bold;
+  }
+
+  .temporary-die-base {
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+}

@@ -1,5 +1,6 @@
 import { normalizeActorType } from '../actor/normalizeActorType.js'
 import { traitSuppressionKey } from '../actor/traitSuppression.js'
+import { getEffectiveTraitDice } from '../actor/temporaryTraitSteps.js'
 
 const clone = value => {
   if (Array.isArray(value)) return value.map(clone)
@@ -13,10 +14,7 @@ const traitDisplayLabel = (traitSet, trait) => (
   traitSet?.settings?.hasLabel && trait?.label ? trait.label : trait?.name
 )
 
-/** Future effective-value changes have one resolver boundary to update. */
-export const getEffectiveTraitDice = trait => trait?.valueType === 'die'
-  ? clone(trait.dice?.value ?? {})
-  : {}
+export { getEffectiveTraitDice }
 
 export function findActorTrait (actorType, traitSetId, traitId) {
   const traitSet = entries(actorType?.traitSets).find(candidate => candidate?.id === traitSetId)

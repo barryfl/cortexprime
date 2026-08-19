@@ -14,6 +14,14 @@
     </div>
   </header>
   <div>
+    {{#if isGM}}
+      <div class="pa-2 relative-section">
+        <div class="section-background-alternate"></div>
+        <button class="btn btn-primary-cpt sync-existing-actors" data-actor-type="{{actorTypeIndex}}" type="button">
+          <i class="fa fa-rotate"></i> {{localize 'SyncExistingActors'}}
+        </button>
+      </div>
+    {{/if}}
     <div class="flex relative-section">
       <div class="section-background"></div>
       <div class="flex-col col-3">

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mergeActorTypeSettings, normalizeActorType } from '../module/actor/normalizeActorType.js'
+import { normalizeActorType } from '../module/actor/normalizeActorType.js'
 
 test('normalizes legacy simple traits without mutating input', () => {
   const input = {
@@ -76,62 +76,4 @@ test('preserves raw legacy representation for import/export', () => {
   normalizeActorType(imported)
 
   assert.equal(JSON.stringify(imported), serialized)
-})
-
-test('refreshes configuration while retaining actor-local typed and legacy values', () => {
-  const actorData = {
-    id: '_actor-type',
-    simpleTraits: {
-      old: {
-        label: 'Old Legacy Label',
-        settings: { valueType: 'number', hasMaxNumber: true },
-        number: { value: 0, max: 12 },
-        description: 'Actor description',
-        hidden: true,
-        edit: true
-      }
-    },
-    traitSets: {
-      local: {
-        id: '_set',
-        label: 'Old Set',
-        traits: {
-          localTrait: { id: '_trait', name: 'Old Name', valueType: 'number', number: { value: 0, max: 8 }, description: 'Local trait' }
-        }
-      }
-    }
-  }
-  const settings = {
-    id: '_actor-type',
-    simpleTraits: {
-      old: {
-        label: 'Legacy Label',
-        settings: { valueType: 'number', hasMaxNumber: true },
-        number: { value: 4, max: 10 },
-        hasDescription: true
-      }
-    },
-    traitSets: {
-      configured: {
-        id: '_set',
-        label: 'Set Label',
-        settings: { hasDice: false },
-        traits: {
-          configuredTrait: { id: '_trait', name: 'Trait Name', valueType: 'number', valueSettings: { hasMaxNumber: true }, number: { value: 3, max: 6 } }
-        }
-      }
-    }
-  }
-
-  const merged = mergeActorTypeSettings(actorData, settings)
-
-  assert.equal(merged.simpleTraits.old.number.value, 0)
-  assert.equal(merged.simpleTraits.old.number.max, 12)
-  assert.equal(merged.simpleTraits.old.label, 'Legacy Label')
-  assert.equal(merged.simpleTraits.old.hidden, true)
-  assert.equal(merged.simpleTraits.old.edit, true)
-  assert.equal(merged.traitSets.configured.traits.configuredTrait.number.value, 0)
-  assert.equal(merged.traitSets.configured.traits.configuredTrait.number.max, 8)
-  assert.equal(merged.traitSets.configured.traits.configuredTrait.name, 'Trait Name')
-  assert.equal(merged.traitSets.configured.traits.configuredTrait.description, 'Local trait')
 })

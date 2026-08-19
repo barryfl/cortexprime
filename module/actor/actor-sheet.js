@@ -4,7 +4,8 @@
  */
 import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objectSome } from '../../lib/helpers.js'
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
-import { mergeActorTypeSettings, normalizeActorType } from './normalizeActorType.js'
+import { normalizeActorType } from './normalizeActorType.js'
+import { syncActorWithActorType } from './syncActorType.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
@@ -558,9 +559,7 @@ return foundry.applications.api.DialogV2.wait({
       return
     }
 
-    const newData = mergeActorTypeSettings(actorData, actorTypeSettings)
-
-    await this._resetDataPoint('system', 'actorType', newData)
+    await syncActorWithActorType(this.actor, actorTypeSettings)
   }
 
   async close (options = {}) {

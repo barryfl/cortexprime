@@ -5,6 +5,7 @@ import { normalizeActorType } from '../actor/normalizeActorType.js'
 import { isPredefinedSectionAvailable, isSectionPlacementEnabled, PREDEFINED_ACTOR_SHEET_SECTIONS, updateBreadcrumbName, withSectionPlacementEnabled } from '../actor/actorTypeSections.js'
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
+import { actorsMatchingActorType, syncActorsWithActorType } from '../actor/syncActorType.js'
 
 const actorSheetSections = Object.fromEntries(PREDEFINED_ACTOR_SHEET_SECTIONS.map(({ id, label }) => [id, label]))
 const sheetSectionWidths = ['full', 'half', 'third']
@@ -102,7 +103,8 @@ export default class ActorSettings extends CortexPrimeApplication {
       ...context,
       actorTypes,
       breadcrumbs,
-      goBack: breadcrumbs[getLength(breadcrumbs ?? {}) - 2]?.target ?? 0
+      goBack: breadcrumbs[getLength(breadcrumbs ?? {}) - 2]?.target ?? 0,
+      isGM: game.user.isGM
     }
   }
 
@@ -143,6 +145,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       '.new-die': this._newDie,
       '.move-sheet-section': this._moveSheetSection,
       '.remove-actor-tab': this._removeTab,
+      '.sync-existing-actors': this._syncExistingActors,
       '.toggle-sheet-section': this._toggleSheetSection,
       '.view-change': this._viewChange,
       '[data-action="openActorSettingsHelp"]': this._openActorSettingsHelp
@@ -448,6 +451,32 @@ export default class ActorSettings extends CortexPrimeApplication {
 
     await game.settings.set('cortexprime', 'actorTypes', source)
     await this.render({ force: true })
+  }
+
+  async _syncExistingActors (event) {
+    event.preventDefault()
+    const { actorType: actorTypeKey } = event.currentTarget.dataset
+    if (!game.user.isGM) return
+
+    await this._saveCurrentForm()
+    const actorType = game.settings.get('cortexprime', 'actorTypes')?.[actorTypeKey]
+    if (!actorType) return
+
+    const matchingActors = actorsMatchingActorType(game.actors, actorType.id)
+    if (!matchingActors.length) {
+      ui.notifications.info(game.i18n.format('SyncActorsNone', { name: actorType.name }))
+      return
+    }
+
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: localizer('SyncExistingActors') },
+      content: `<p>${game.i18n.format('SyncActorsQuestion', { count: matchingActors.length, name: actorType.name })}</p><p>${localizer('SyncActorsSafety')}</p>`,
+      yes: { default: false }
+    })
+    if (!confirmed) return
+
+    const updatedActors = await syncActorsWithActorType(actorType, matchingActors)
+    ui.notifications.info(game.i18n.format('SyncActorsComplete', { count: updatedActors.length, name: actorType.name }))
   }
 
   async _breadcrumbChange (event) {

@@ -384,8 +384,6 @@ export default async function (pool, rollType) {
   const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
   const sourceDefaultCollapsed = game.settings.get('cortexprime', 'rollResultSourceCollapsed')
 
-  await this?._clearDicePool()
-
   const selectedDice = rollType === 'total'
     ? getDiceByTotal(rollResults.results)
     : rollType === 'effect'
@@ -402,5 +400,5 @@ export default async function (pool, rollType) {
     total: selectedDice.total
   })
 
-  await ChatMessage.create({ content })
+  return ChatMessage.create({ content })
 }

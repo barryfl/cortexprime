@@ -2,27 +2,9 @@ import { localizer } from '../scripts/foundryHelpers.js'
 import { getLength, objectFilter, objectMapValues, objectReindexFilter } from '../../lib/helpers.js'
 import rollDice from '../scripts/rollDice.js'
 import { CortexPrimeApplication } from './CortexPrimeApplication.js'
-
-const blankPool = {
-  customAdd: {
-    label: '',
-    value: { 0: '8' }
-  },
-  pool: {}
-}
+import { completeDicePoolRoll, createBlankDicePool, resetUserDicePool } from './dicePoolLifecycle.js'
 
 export class UserDicePool extends CortexPrimeApplication {
-  constructor(options = {}) {
-    super(options)
-    let userDicePool = game.user.getFlag('cortexprime', 'dicePool')
-
-    if (!userDicePool) {
-      userDicePool = blankPool
-    }
-
-    this.dicePool = userDicePool
-  }
-
   static DEFAULT_OPTIONS = {
     id: 'user-dice-pool',
     tagName: 'form',
@@ -60,7 +42,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
   async _prepareContext (options) {
     const context = await super._prepareContext(options)
-    const dice = game.user.getFlag('cortexprime', 'dicePool')
+    const dice = game.user.getFlag('cortexprime', 'dicePool') ?? createBlankDicePool()
     const themes = game.settings.get('cortexprime', 'themes')
     const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
     return { ...context, ...dice, theme }
@@ -70,7 +52,7 @@ export class UserDicePool extends CortexPrimeApplication {
     const form = this.element.matches('form') ? this.element : this.element.querySelector('form')
     if (!form) return
 
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
     const formData = Object.fromEntries(new FormData(form).entries())
     const newDice = foundry.utils.mergeObject(currentDice, foundry.utils.expandObject(formData))
 
@@ -89,14 +71,23 @@ export class UserDicePool extends CortexPrimeApplication {
   }
 
   async initPool () {
-    await game.user.setFlag('cortexprime', 'dicePool', null)
-    await game.user.setFlag('cortexprime', 'dicePool', this.dicePool)
+    await this._resetDicePool({ rerender: false })
+  }
+
+  _getDicePool () {
+    return foundry.utils.deepClone(game.user.getFlag('cortexprime', 'dicePool') ?? createBlankDicePool())
+  }
+
+  async _resetDicePool ({ rerender = true } = {}) {
+    const blankPool = await resetUserDicePool(game.user)
+    if (rerender && this.rendered) await this._renderPreservingScroll()
+    return blankPool
   }
 
   async _addCustomTraitToPool (event) {
     event.preventDefault()
 
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
     const currentCustomLength = getLength(currentDice.pool.custom ?? {})
 
     foundry.utils.setProperty(currentDice, `pool.custom.${currentCustomLength}`, currentDice.customAdd)
@@ -114,7 +105,7 @@ export class UserDicePool extends CortexPrimeApplication {
   }
 
   async _addTraitToPool (source, label, value) {
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
     const currentDiceLength = getLength(currentDice.pool[source] || {})
     foundry.utils.setProperty(currentDice, `pool.${source}.${currentDiceLength}`, { label, value })
 
@@ -127,18 +118,13 @@ export class UserDicePool extends CortexPrimeApplication {
 
   async _clearDicePool (event) {
     if (event) event.preventDefault()
-
-    await game.user.setFlag('cortexprime', 'dicePool', null)
-
-    await game.user.setFlag('cortexprime', 'dicePool', blankPool)
-
-    await this._renderPreservingScroll()
+    return this._resetDicePool()
   }
 
   async _clearSource (event, actionTarget = event.currentTarget) {
     event.preventDefault()
     const { source } = actionTarget.dataset
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
 
     await game.user.setFlag('cortexprime', 'dicePool', null)
 
@@ -153,7 +139,7 @@ export class UserDicePool extends CortexPrimeApplication {
     event.preventDefault()
     await this._saveForm()
 
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
     const { target, key: targetKey } = event.currentTarget.dataset
     const targetValue = event.currentTarget.value
     const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
@@ -173,7 +159,7 @@ export class UserDicePool extends CortexPrimeApplication {
     if (event.button === 2) {
       await this._saveForm()
 
-      const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+      const currentDice = this._getDicePool()
       const { target, key: targetKey } = event.currentTarget.dataset
       const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
 
@@ -189,7 +175,7 @@ export class UserDicePool extends CortexPrimeApplication {
 
   async _onNewDie (event, actionTarget = event.currentTarget) {
     event.preventDefault()
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
     const { target } = actionTarget.dataset
     const dataTargetValue = foundry.utils.getProperty(currentDice, `${target}.value`) || {}
     const currentLength = getLength(dataTargetValue)
@@ -207,7 +193,7 @@ export class UserDicePool extends CortexPrimeApplication {
   async _removePoolTrait (event, actionTarget = event.currentTarget) {
     event.preventDefault()
     const { source, key } = actionTarget.dataset
-    let currentDicePool = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDicePool = this._getDicePool()
 
     if (getLength(currentDicePool.pool[source] || {}) < 2) {
       delete currentDicePool.pool[source]
@@ -225,7 +211,7 @@ export class UserDicePool extends CortexPrimeApplication {
   async _resetCustomPoolTrait (event) {
     event.preventDefault()
 
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
 
     foundry.utils.setProperty(currentDice, 'customAdd', {
       label: '',
@@ -240,7 +226,7 @@ export class UserDicePool extends CortexPrimeApplication {
   }
 
   async _setPool (pool) {
-    const currentDice = game.user.getFlag('cortexprime', 'dicePool')
+    const currentDice = this._getDicePool()
 
     foundry.utils.setProperty(currentDice, 'pool', pool)
 
@@ -255,15 +241,15 @@ export class UserDicePool extends CortexPrimeApplication {
     event.preventDefault()
     const { rollType = 'select' } = actionTarget.dataset
 
-    const currentDicePool = game.user.getFlag('cortexprime', 'dicePool')
-
-    const dicePool = currentDicePool.pool
-
-    await rollDice.call(this, dicePool, rollType)
+    const dicePool = this._getDicePool().pool
+    return completeDicePoolRoll(
+      () => rollDice.call(this, dicePool, rollType),
+      () => this.close()
+    )
   }
 
-  async close (options) {
-    if (this.rendered) await this._saveForm()
+  async close (options = {}) {
+    await this._resetDicePool({ rerender: false })
     return super.close(options)
   }
 

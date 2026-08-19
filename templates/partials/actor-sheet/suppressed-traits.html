@@ -1,0 +1,20 @@
+{{#if (and editable traits)}}
+  <div class="section-cpt mt-4">
+    <div class="section-image"></div>
+    <div class="section-background"></div>
+    <div class="section-content pa-2">
+      <h3 class="section-secondary-title-cpt mt-0">{{localize 'HiddenTraits'}}</h3>
+      <ul class="list-style-none px-0 mb-0">
+        {{#each traits as |trait|}}
+          <li class="flex-row flex-ac flex-jsb py-1">
+            <span class="flex-col">{{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}</span>
+            <button class="btn btn-icon btn-icon-plain-cpt btn-small flex-col" data-action="restoreTrait"
+              data-suppression-id="{{trait._suppressionId}}" title="{{localize 'RestoreTrait'}}" type="button">
+              <i class="fa fa-eye"></i>
+            </button>
+          </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+{{/if}}

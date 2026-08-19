@@ -158,7 +158,7 @@ export function mergeActorTypeConfiguration (actorTypeDataInput, actorTypeTempla
     )
   }
 
-  for (const actorOwnedKey of ['assets', 'complications', 'notes', 'traitSetEdit']) {
+  for (const actorOwnedKey of ['assets', 'complications', 'notes', 'suppressedTraits', 'traitSetEdit']) {
     if (hasOwn(actorTypeData, actorOwnedKey)) merged[actorOwnedKey] = clone(actorTypeData[actorOwnedKey])
   }
 

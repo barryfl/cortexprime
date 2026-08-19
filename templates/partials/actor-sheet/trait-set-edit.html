@@ -56,5 +56,10 @@
         path=(concat path '.' traitSetIndex)
       }}
     </div>
+    {{> "systems/cortexprime/templates/partials/actor-sheet/suppressed-traits.html"
+      editable=editable
+      settings=traitSet.settings
+      traits=traitSet._suppressedTraits
+    }}
   </div>
 </div>

@@ -16,6 +16,14 @@
               {{/if}}
             {{/if}}
           {{/if}}
+          {{#if (and ../editable (and (not ../custom) trait._suppressionId))}}
+            <button class="btn btn-icon btn-icon-plain-cpt btn-small" data-action="suppressTrait"
+              data-suppression-id="{{trait._suppressionId}}"
+              data-trait-name="{{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}"
+              title="{{localize 'HideTrait'}}" type="button">
+              <i class="fa fa-eye-slash"></i>
+            </button>
+          {{/if}}
           {{#if (and (and ../data.hasHidableTraits trait.hidden) (or (not trait._source.compatibility) (not trait.edit)))}}
             <span class="flex-col pr-0">
               <i class="fa fa-eye-slash"></i>

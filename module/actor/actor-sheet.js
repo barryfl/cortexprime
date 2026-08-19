@@ -7,6 +7,7 @@ import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { normalizeActorType } from './normalizeActorType.js'
 import { syncActorWithActorType } from './syncActorType.js'
 import { appendCustomTrait, canCreateCustomTrait, isCustomTraitSetPath } from './customTraits.js'
+import { findSuppressibleTrait, prepareTraitSuppressions, withTraitRestored, withTraitSuppressed } from './traitSuppression.js'
 import { changeResourceValue, initializeActorTypeResources, isResourceTraitPath, pruneImplicitResourceSettings } from './resourceTraits.js'
 import { ScrollPreservation } from '../applications/scrollPreservation.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
@@ -50,7 +51,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       changeResource: function (event, target) { return this._changeResource(event, target) },
       newDie: function (event, target) { return this._newDie(event, target) },
       removeItem: function (event, target) { return removeItems.call(this, event, target) },
+      restoreTrait: function (event, target) { return this._restoreTrait(event, target) },
       spendPp: function () { return this._spendPp() },
+      suppressTrait: function (event, target) { return this._suppressTrait(event, target) },
       toggleItem: function (event, target) { return toggleItems.call(this, event, target) },
       traitSetEdit: function (event, target) { return this._traitSetEdit(event, target) },
       updateActorSettings: function (event) { return this._updateActorSettings(event) },
@@ -79,9 +82,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const context = await super._prepareContext(options)
     const themes = game.settings.get('cortexprime', 'themes')
     const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
-    const actorType = normalizeActorType(this.actor.system.actorType, {
+    const actorType = prepareTraitSuppressions(normalizeActorType(this.actor.system.actorType, {
       legacyLabel: localizer('SimpleTraits')
-    })
+    }))
     for (const traitSet of Object.values(actorType?.traitSets ?? {})) {
       traitSet._canCreateCustomTraits = canCreateCustomTrait(traitSet, {
         isEditable: this.isEditable,
@@ -638,6 +641,45 @@ return foundry.applications.api.DialogV2.wait({
     await this.actor.update({
       ['system.actorType.traitSetEdit']: traitSet
     })
+  }
+
+  async _suppressTrait (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { suppressionId, traitName } = target.dataset
+    if (!this.isEditable || !this.actor.isOwner || !suppressionId) return false
+
+    const actorType = normalizeActorType(this.actor.system.actorType, {
+      legacyLabel: localizer('SimpleTraits')
+    })
+    if (!findSuppressibleTrait(actorType, suppressionId)) return false
+
+    await this._saveCurrentForm()
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: localizer('HideTrait') },
+      content: `<p>${localizer('HideTraitConfirmation')}</p><p><strong>${foundry.utils.escapeHTML(traitName ?? '')}</strong></p>`,
+      yes: { default: false }
+    })
+    if (!confirmed) return false
+
+    const suppressedTraits = withTraitSuppressed(this.actor.system.actorType.suppressedTraits, suppressionId)
+    await this._resetDataPoint('system.actorType', 'suppressedTraits', suppressedTraits)
+    return true
+  }
+
+  async _restoreTrait (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { suppressionId } = target.dataset
+    if (!this.isEditable || !this.actor.isOwner || !suppressionId) return false
+
+    const actorType = normalizeActorType(this.actor.system.actorType, {
+      legacyLabel: localizer('SimpleTraits')
+    })
+    if (!findSuppressibleTrait(actorType, suppressionId)) return false
+
+    await this._saveCurrentForm()
+    const suppressedTraits = withTraitRestored(this.actor.system.actorType.suppressedTraits, suppressionId)
+    await this._resetDataPoint('system.actorType', 'suppressedTraits', suppressedTraits)
+    return true
   }
 
   async _updateActorSettings(event) {

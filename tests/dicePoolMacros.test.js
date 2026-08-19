@@ -169,6 +169,9 @@ test('UI and system API export, reconstruct, open, and never auto-roll', () => {
   const template = read('templates/dice-pool.html')
 
   assert.match(template, /data-action="exportMacro"/)
+  assert.equal((template.match(/data-action="clearPool"/g) ?? []).length, 1)
+  assert.equal((template.match(/data-action="exportMacro"/g) ?? []).length, 1)
+  assert.match(template, /flex flex-wrap flex-je[\s\S]*data-action="clearPool"[\s\S]*data-action="exportMacro"/)
   assert.match(application, /Macro\.create\(createSavedPoolMacroData/)
   assert.match(application, /async loadSavedPool[\s\S]*resolveSavedPoolRecipe[\s\S]*await this\._setPool\(pool\)/)
   assert.doesNotMatch(application.match(/async loadSavedPool[\s\S]*?\n  }/)?.[0] ?? '', /rollDice/)

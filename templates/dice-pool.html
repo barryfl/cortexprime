@@ -93,12 +93,10 @@
         <div class="separator-cpt"></div>
         <div class="relative-section">
           <div class="section-background"></div>
-          <div class="flex-col col-12 flex flex-je py-2">
-            <div class="flex-col">
+          <div class="flex-col col-12 flex flex-wrap flex-je py-2">
+            <div class="flex-col flex flex-ac">
               <button class="clear-dice-pool btn btn-secondary-cpt" data-action="clearPool" type="button">{{localize 'Clear'}}</button>
-            </div>
-            <div class="flex-col pl-0">
-              <button class="export-pool-macro btn btn-secondary-cpt" data-action="exportMacro" type="button">{{localize 'ExportToMacro'}}</button>
+              <button class="export-pool-macro btn btn-secondary-cpt ml-1" data-action="exportMacro" type="button">{{localize 'ExportToMacro'}}</button>
             </div>
             <div class="flex-col pl-0">
               <button class="roll-dice-pool btn btn-primary-cpt" data-action="rollPool" data-roll-type="select" type="button">{{localize 'RollAndSelect'}}</button>

@@ -1,24 +1,21 @@
 <section class="flex flex-wrap flex-c mb-2">
   <h2 class="section-primary-title-cpt mb-1 flex-col col-12">{{localize 'PlotPoints'}}</h2>
-  <div class="flex-col col-12">
+  <div class="pp-controls-cpt flex flex-ac flex-wrap">
+    {{> "systems/cortexprime/templates/partials/plot-point.html" }}
     {{#if owner}}
-      <button class="btn btn-pp spend-pp" data-action="spendPp" type="button" {{ternary (lt pp.value 1) "disabled" ""}}>
-        {{> "systems/cortexprime/templates/partials/plot-point.html" size='lg' }}
+      <button class="btn btn-icon btn-secondary-cpt spend-pp" data-action="spendPp"
+        title="{{localize 'SpendPlotPoint'}}" aria-label="{{localize 'SpendPlotPoint'}}"
+        type="button" {{ternary (lt pp.value 1) "disabled" ""}}>
+        <i class="fa fa-minus"></i>
       </button>
-    {{/if}}
-  </div>
-  <div class="flex-col col-12 flex flex-c">
-    {{#if owner}}
-      <div class="flex-col col-6">
-        <input class="input-cpt pp-number-field flex-col col-6" type="number" value="{{pp.value}}">
-      </div>
-      <div class="flex-col col-6 flex flex-jc">
-        <button class="btn btn-icon btn-primary-cpt add-pp" data-action="addPp" title="{{localize 'AddPlotPoint'}}" type="button">
-          <i class="fa fa-plus"></i>
-        </button>
-      </div>
+      <input class="input-cpt pp-number-field" type="number" value="{{pp.value}}"
+        title="{{localize 'PlotPoints'}}" aria-label="{{localize 'PlotPoints'}}">
+      <button class="btn btn-icon btn-primary-cpt add-pp" data-action="addPp"
+        title="{{localize 'AddPlotPoint'}}" aria-label="{{localize 'AddPlotPoint'}}" type="button">
+        <i class="fa fa-plus"></i>
+      </button>
     {{else}}
-      <span class="flex-col col-6 section-secondary-title-cpt">{{pp.value}}</span>
+      <span class="section-secondary-title-cpt">{{pp.value}}</span>
     {{/if}}
   </div>
 </section>

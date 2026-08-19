@@ -12,6 +12,8 @@
           class="die-select"
           data-key="{{index}}"
           data-target="{{or ../selectName ../path}}"
+          title="{{localize 'ChangePermanentDie'}}"
+          aria-label="{{localize 'ChangePermanentDie'}}"
         >
           {{> "systems/cortexprime/templates/partials/dice/select-options.html" max=(?? ../max 12) min=(?? ../min 0) selected=dieRating}}
         </select>
@@ -19,7 +21,8 @@
     {{/each}}
   </div>
   {{#if (or (listHasLess dice (?? maxDice -1)) (not dice)) }}
-    <button class="new-die btn btn-icon btn-icon-plain-cpt btn-small ml-1" data-action="newDie" data-target="{{or selectName path}}" type="button">
+    <button class="new-die btn btn-icon btn-icon-plain-cpt btn-small ml-1" data-action="newDie" data-target="{{or selectName path}}"
+      title="{{localize 'AddDie'}}" aria-label="{{localize 'AddDie'}}" type="button">
       <i class="fa fa-plus"></i>
     </button>
   {{/if}}

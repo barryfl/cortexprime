@@ -42,8 +42,22 @@
   cursor: pointer;
 
   &::before {
-    font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
-    content: "\f522";
+    content: "+";
+    font-family: inherit;
+    font-weight: bold;
+    margin-right: toRem(3px);
+  }
+}
+
+.pp-controls-cpt {
+  gap: toRem(4px);
+  justify-content: center;
+
+  .pp-number-field {
+    flex: 0 0 toRem(52px);
+    min-width: 0;
+    text-align: center;
+    width: toRem(52px);
   }
 }
 

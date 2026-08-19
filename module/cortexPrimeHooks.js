@@ -2,6 +2,7 @@ import { UserDicePool } from './applications/UserDicePool.js'
 import { localizer, setCssVars } from './scripts/foundryHelpers.js'
 import rollDice from './scripts/rollDice.js'
 import { initializeActorTypeResources } from './actor/resourceTraits.js'
+import { CortexPrimeHelp } from './apps/CortexPrimeHelp.js'
 
 export default () => {
   Hooks.on('renderDialogV2', (application, element) => {
@@ -60,33 +61,42 @@ export default () => {
     setCssVars(theme)
     if (game.settings.get('cortexprime', 'WelcomeSeen') === false) {
       if (game.user.isGM) {
-        const seeWelcome = await foundry.applications.api.DialogV2.confirm({
-  window: {
-    title: localizer('WelcomeTitle')
-  },
+        const welcomeAction = await foundry.applications.api.DialogV2.wait({
+          window: { title: localizer('WelcomeTitle') },
+          position: { width: 500 },
+          content: `
+            <div class="bkg-lighter-grey ba-2-primary mb-4 pa-2">
+              <p>${localizer('WelcomeFeatures')}</p>
+              <p>${localizer('WelcomeHelpPrompt')}</p>
+            </div>
+          `,
+          buttons: [
+            {
+              action: 'later',
+              label: localizer('NotNow'),
+              callback: () => 'later'
+            },
+            {
+              action: 'dismiss',
+              label: localizer('DontShowAgain'),
+              callback: () => 'dismiss'
+            },
+            {
+              action: 'help',
+              icon: 'fa-solid fa-circle-question',
+              label: localizer('OpenHelp'),
+              default: true,
+              callback: () => 'help'
+            }
+          ],
+          close: () => 'later'
+        })
 
-  position: {
-    width: 500
-  },
-
-  content: `
-    <div class="bkg-lighter-grey ba-2-primary mb-4 pa-2">
-      <p>${localizer('SettingsMessage')}</p>
-    </div>
-  `,
-
-  yes: {
-    label: localizer('Okay'),
-    default: true
-  },
-
-  no: {
-    label: localizer('Cancel')
-  }
-})
-
-        if (seeWelcome) {
+        if (welcomeAction === 'help' || welcomeAction === 'dismiss') {
           await game.settings.set('cortexprime', 'WelcomeSeen', true)
+        }
+        if (welcomeAction === 'help') {
+          new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)
         }
       }
     }

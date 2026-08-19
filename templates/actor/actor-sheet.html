@@ -36,12 +36,13 @@
             {{#if data.system.actorType.hasNotesPage}}
               <a class="item tab-cpt {{notesTabClass}}{{ternary (eq theme.tabStyle 'rounded') ' tab-rounded-cpt' ''}}" data-group="primary" data-tab="notes">{{localize 'Notes'}}</a>
             {{/if}} 
-             <button type="button" data-action="openHelp">
+             <button type="button" data-action="openHelp" title="{{localize 'CortexPrimeSystemGuide'}}"
+               aria-label="{{localize 'CortexPrimeSystemGuide'}}">
                {{localize 'Help'}}
              </button>
              {{#if (and editable hasTemporaryTraitSteps)}}
                <button class="btn btn-icon btn-icon-plain-cpt" type="button" data-action="resetTemporaryTraitSteps"
-                 title="{{localize 'ResetTemporaryTraitSteps'}}">
+                 title="{{localize 'ResetAllTemporaryTraitSteps'}}" aria-label="{{localize 'ResetAllTemporaryTraitSteps'}}">
                  <i class="fa fa-rotate-left"></i>
                </button>
              {{/if}}

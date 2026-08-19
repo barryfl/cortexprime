@@ -20,7 +20,7 @@
             <button class="btn btn-icon btn-icon-plain-cpt btn-small" data-action="suppressTrait"
               data-suppression-id="{{trait._suppressionId}}"
               data-trait-name="{{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}"
-              title="{{localize 'HideTrait'}}" type="button">
+              title="{{localize 'HideTraitOnActor'}}" aria-label="{{localize 'HideTraitOnActor'}}" type="button">
               <i class="fa fa-eye-slash"></i>
             </button>
           {{/if}}
@@ -31,7 +31,9 @@
           {{/if}}
           {{#unless (eq trait.valueType 'resource')}}<span
             class="flex-col flex-g-1{{ternary (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])) ' add-to-pool' ''}}{{ternary trait.shutdown ' shutdown' ''}}"
-            {{#if (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0]))}}data-action="addToPool"{{/if}}
+            {{#if (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0]))}}
+              data-action="addToPool" title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}"
+            {{/if}}
             data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
             data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}>
             {{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}

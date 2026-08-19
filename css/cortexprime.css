@@ -1073,8 +1073,24 @@
   cursor: pointer;
 }
 .cortexprime .add-to-pool::before {
-  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
-  content: "\f522";
+  content: "+";
+  font-family: inherit;
+  font-weight: bold;
+  margin-right: 0.1875rem;
+}
+.cortexprime .pp-controls-cpt {
+  gap: 0.25rem;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.cortexprime .pp-controls-cpt .pp-number-field {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 3.25rem;
+  flex: 0 0 3.25rem;
+  min-width: 0;
+  text-align: center;
+  width: 3.25rem;
 }
 .cortexprime .resource-cpt {
   gap: 0.4rem;

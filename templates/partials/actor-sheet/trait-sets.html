@@ -11,6 +11,11 @@
             </div>
             {{#if (and ../owner (not traitSet._compatibility))}}
               <div class="flex-col">
+                {{#if traitSet._canCreateCustomTraits}}
+                  <button class="btn btn-icon btn-primary-cpt add-trait" data-action="addTrait" data-path="{{concat ../path '.' traitSetIndex}}" title="{{localize 'AddCustomTrait'}}" type="button">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                {{/if}}
                 <button class="btn btn-icon btn-icon-plain-cpt trait-set-edit" data-action="traitSetEdit" data-trait-set="{{traitSetIndex}}" type="button">
                   <i class="fa-solid fa-edit"></i>
                 </button>

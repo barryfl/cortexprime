@@ -45,6 +45,7 @@
       {{/if}}
       {{> "systems/cortexprime/templates/partials/actor-sheet/traits-edit.html"
         custom=true
+        canCreate=traitSet._canCreateCustomTraits
         data=data
         label=(localize 'CustomTraits')
         target='customTraits'

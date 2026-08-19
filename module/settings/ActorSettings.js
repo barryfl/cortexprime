@@ -327,7 +327,8 @@ export default class ActorSettings extends CortexPrimeApplication {
           [newKey]: {
             id: traitSetId,
             label: localizer('NewTraitSet'),
-            tabId: defaultTabId
+            tabId: defaultTabId,
+            settings: { allowCustomTraits: true }
           }
         }
       }

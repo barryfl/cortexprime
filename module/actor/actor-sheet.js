@@ -6,6 +6,7 @@ import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objec
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { normalizeActorType } from './normalizeActorType.js'
 import { syncActorWithActorType } from './syncActorType.js'
+import { appendCustomTrait, canCreateCustomTrait } from './customTraits.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
@@ -76,6 +77,13 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const actorType = normalizeActorType(this.actor.system.actorType, {
       legacyLabel: localizer('SimpleTraits')
     })
+    for (const traitSet of Object.values(actorType?.traitSets ?? {})) {
+      traitSet._canCreateCustomTraits = canCreateCustomTrait(traitSet, {
+        isEditable: this.isEditable,
+        isGM: game.user.isGM,
+        isOwner: this.actor.isOwner
+      })
+    }
     const configuredTabs = actorType?.tabs && getLength(actorType.tabs)
       ? Object.values(actorType.tabs)
       : [{ id: 'traits', label: localizer('Traits') }]
@@ -332,23 +340,33 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   async _addTrait (event, target = event.currentTarget) {
-    await this._saveCurrentForm()
+    event.preventDefault()
     const { path } = target.dataset
+    await this._saveCurrentForm()
+    if (!/^system\.actorType\.traitSets\.[^.]+$/.test(path ?? '')) return
+
+    const traitSet = foundry.utils.getProperty(this.actor, path)
+    if (!canCreateCustomTrait(traitSet, {
+      isEditable: this.isEditable,
+      isGM: game.user.isGM,
+      isOwner: this.actor.isOwner
+    })) {
+      ui.notifications.warn(localizer('CustomTraitsNotAllowed'))
+      return
+    }
+
     const currentCustomTraits = foundry.utils.getProperty(this.actor, `${path}.customTraits`) ?? {}
 
-    await this._resetDataPoint(path, 'customTraits', {
-      ...currentCustomTraits,
-      [getLength(currentCustomTraits)]: {
-        id: `_${Date.now()}`,
-        name: localizer('NewTrait'),
-        valueType: 'die',
-        dice: {
-          value: {
-            0: '8'
-          }
+    await this._resetDataPoint(path, 'customTraits', appendCustomTrait(currentCustomTraits, {
+      id: `_${Date.now()}`,
+      name: localizer('NewTrait'),
+      valueType: 'die',
+      dice: {
+        value: {
+          0: '8'
         }
       }
-    })
+    }))
   }
 
   async _closeTraitSetEdit(event) {

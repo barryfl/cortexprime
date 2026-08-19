@@ -4,7 +4,7 @@
     <div class="pb-2">
       <label class="flex flex-ac">
         <div class="checkmark-container">
-          <input class="input-checkbox-cpt" name="{{concat 'actorTypes.' path '.settings.consumableDice'}}" type="checkbox" {{checked data.settings.consumableDice}}>
+          <input class="input-checkbox-cpt" name="{{concat settingsFieldPath '.consumableDice'}}" type="checkbox" {{checked settings.consumableDice}}>
           <div class="checkmark-cpt"></div>
         </div>
         <span class="input-label-cpt mb-0 ml-2">{{localize 'ConsumableDice'}}</span>

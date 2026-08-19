@@ -2,12 +2,12 @@
   <header class="flex flex-ac py-2 relative-section">
     <div class="section-background"></div>
     <div class="flex-col col-12">
-      <input class="breadcrumb-name-change input-cpt" data-target="{{concat 'trait-' actorTypeIndex '-' traitSetIndex '-' traitIndex}}" name="{{concat 'actorTypes.' path '.' traitIndex '.name'}}" type="text" value="{{trait.name}}">
+      <input class="breadcrumb-name-change input-cpt" data-target="{{concat 'trait-' actorTypeIndex '-' traitSetIndex '-' traitIndex}}" name="{{concat fieldPath (ternary trait._source.compatibility '.label' '.name')}}" type="text" value="{{trait.name}}">
     </div>
     <div class="flex-col">
       {{> "systems/cortexprime/templates/partials/remove-button.html"
-        group=path
-        itemKey=traitIndex
+        group=collectionPath
+        itemKey=sourceKey
         itemName=trait.name
         setting='actorTypes'
         type="trash"
@@ -15,23 +15,55 @@
     </div>
   </header>
   <div>
-    {{#if settings.hasDescription}}
+    <div class="relative-section pa-2">
+      <div class="section-background"></div>
+      <label class="input-label-cpt">{{localize 'ValueType'}}</label>
+      <select class="input-cpt value-type-select" name="{{concat fieldPath (ternary trait._source.compatibility '.settings.valueType' '.valueType')}}">
+        <option value="{{ternary trait._source.compatibility 'dice' 'die'}}" {{#if (eq trait.valueType 'die')}}selected{{/if}}>{{localize 'DieRating'}}</option>
+        <option value="number" {{#if (eq trait.valueType 'number')}}selected{{/if}}>{{localize 'Number'}}</option>
+        <option value="text" {{#if (eq trait.valueType 'text')}}selected{{/if}}>{{localize 'Text'}}</option>
+      </select>
+    </div>
+    {{#if trait._source.compatibility}}
+      <div class="relative-section pa-2">
+        <div class="section-background"></div>
+        <label class="flex flex-ac">
+          <div class="checkmark-container">
+            <input class="input-checkbox-cpt" name="{{concat fieldPath '.hasDescription'}}" type="checkbox" {{checked trait.hasDescription}}>
+            <div class="checkmark-cpt"></div>
+          </div>
+          <span class="input-label-cpt mb-0 ml-2">{{localize 'HasDescription'}}</span>
+        </label>
+      </div>
+    {{/if}}
+    {{#if (or (and trait._source.compatibility trait.hasDescription) (and (not trait._source.compatibility) settings.hasDescription))}}
       <div class="relative-section pa-2">
         <div class="section-background"></div>
         <label class="input-label-cpt">{{localize 'Description'}}</label>
-        <textarea class="input-cpt" name="{{concat 'actorTypes.' path '.' traitIndex '.description'}}">{{trait.description}}</textarea>
+        <textarea class="input-cpt" name="{{concat fieldPath '.description'}}">{{trait.description}}</textarea>
       </div>
     {{/if}}
-    {{#if settings.hasDice}}
-      {{> (concat "systems/cortexprime/templates/partials/settings/value-types/dice.html")
-        path=(concat path '.' traitIndex)
+    {{#if (and (eq trait.valueType 'die') settings.hasDice)}}
+      {{> "systems/cortexprime/templates/partials/settings/value-types/dice.html"
+        consumableOption=trait._source.compatibility
         data=trait
+        fieldPath=fieldPath
+        path=path
+        settings=trait.valueSettings
+        settingsFieldPath=(concat fieldPath (ternary trait._source.compatibility '.settings' '.valueSettings'))
       }}
+    {{else if (eq trait.valueType 'number')}}
+      {{> "systems/cortexprime/templates/partials/settings/value-types/number.html"
+        data=trait fieldPath=fieldPath path=path settings=trait.valueSettings
+        settingsFieldPath=(concat fieldPath (ternary trait._source.compatibility '.settings' '.valueSettings'))
+      }}
+    {{else if (eq trait.valueType 'text')}}
+      {{> "systems/cortexprime/templates/partials/settings/value-types/text.html" data=trait fieldPath=fieldPath path=path}}
     {{/if}}
     {{#if settings.hasSubTraits}}
       <div class="separator-cpt"></div>
       {{> (concat "systems/cortexprime/templates/partials/settings/value-types/sub-traits.html")
-        path=(concat path '.' traitIndex)
+        path=path
         data=trait
         settings=settings
       }}
@@ -39,14 +71,14 @@
     {{#if settings.hasDescriptors}}
       <div class="separator-cpt"></div>
       {{> (concat "systems/cortexprime/templates/partials/settings/value-types/descriptors.html")
-        path=(concat path '.' traitIndex)
+        path=path
         data=trait
       }}
     {{/if}}
     {{#if settings.hasSfx}}
       <div class="separator-cpt"></div>
       {{> (concat "systems/cortexprime/templates/partials/settings/value-types/sfx.html")
-        path=(concat path '.' traitIndex)
+        path=path
         data=trait
       }}
     {{/if}}

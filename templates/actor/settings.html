@@ -28,33 +28,30 @@
               breadcrumbs=../breadcrumbs
             }}
             {{#each actorType.traitSets as |traitSet traitSetIndex|}}
-              {{> "systems/cortexprime/templates/partials/settings/trait-set.html"
-                actorTypeIndex=actorTypeIndex
-                breadcrumbs=../../breadcrumbs
-                path=(concat actorTypeIndex '.traitSets')
-                traitSet=traitSet
-                traitSetIndex=traitSetIndex
-              }}
+              {{#unless traitSet._compatibility}}
+                {{> "systems/cortexprime/templates/partials/settings/trait-set.html"
+                  actorTypeIndex=actorTypeIndex
+                  breadcrumbs=../../breadcrumbs
+                  path=(concat actorTypeIndex '.traitSets')
+                  traitSet=traitSet
+                  traitSetIndex=traitSetIndex
+                }}
+              {{/unless}}
               {{#each traitSet.traits as |trait traitIndex|}}
                 {{> "systems/cortexprime/templates/partials/settings/trait.html"
                   actorTypeIndex=actorTypeIndex
                   breadcrumbs=../../../breadcrumbs
-                  path=(concat actorTypeIndex '.traitSets.' traitSetIndex '.traits')
+                  collectionPath=trait._source.collectionPath
+                  fieldPath=trait._source.formPath
+                  formCollectionPath=trait._source.formCollectionPath
+                  path=trait._source.sourcePath
+                  sourceKey=trait._source.sourceKey
                   settings=traitSet.settings
                   trait=trait
                   traitIndex=traitIndex
                   traitSetIndex=traitSetIndex
                 }}
               {{/each}}
-            {{/each}}
-            {{#each actorType.simpleTraits as |simpleTrait simpleTraitIndex|}}
-              {{> "systems/cortexprime/templates/partials/settings/simple-trait.html"
-                actorTypeIndex=actorTypeIndex
-                breadcrumbs=../../breadcrumbs
-                path=(concat actorTypeIndex '.simpleTraits')
-                simpleTrait=simpleTrait
-                simpleTraitIndex=simpleTraitIndex
-              }}
             {{/each}}
           {{/each}}
         </main>

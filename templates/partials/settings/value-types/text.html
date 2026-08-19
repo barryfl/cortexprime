@@ -5,7 +5,7 @@
     {{> "systems/cortexprime/templates/partials/value-types/text.html"
       data=data
       edit=true
-      fieldPath=(concat 'actorTypes.' path '.text')
+      fieldPath=(concat fieldPath '.text')
       path=(concat path '.text')
     }}
   </label>

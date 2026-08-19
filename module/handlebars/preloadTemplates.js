@@ -1,7 +1,6 @@
 export const preloadHandlebarsTemplates = async function () {
   const templatePaths = [
     'actor-sheet/identity',
-    'actor-sheet/simple-traits',
     'actor-sheet/temporary-traits',
     'actor-sheet/traits',
     'actor-sheet/traits-edit',
@@ -46,7 +45,6 @@ export const preloadHandlebarsTemplates = async function () {
     'settings/theme/traits',
     'settings/trait',
     'settings/trait-set',
-    'settings/simple-trait',
     'settings/value-types/descriptors',
     'settings/value-types/dice',
     'settings/value-types/number',

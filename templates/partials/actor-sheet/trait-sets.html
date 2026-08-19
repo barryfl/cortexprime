@@ -9,7 +9,7 @@
             <div class="flex-col{{ternary traitSet.shutdown ' shutdown' ''}}">
               <span>{{or traitSet.label (concat '[' (localize 'TraitSet') ']')}}</span>
             </div>
-            {{#if ../owner}}
+            {{#if (and ../owner (not traitSet._compatibility))}}
               <div class="flex-col">
                 <button class="btn btn-icon btn-icon-plain-cpt trait-set-edit" data-action="traitSetEdit" data-trait-set="{{traitSetIndex}}" type="button">
                   <i class="fa-solid fa-edit"></i>

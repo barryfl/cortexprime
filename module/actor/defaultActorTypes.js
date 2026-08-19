@@ -11,18 +11,16 @@ export default {
     sectionTabs: {
       profile: '_tab1',
       plotPoints: '_tab1',
-      simpleTraits: '_tab1',
       assets: '_tab1',
       complications: '_tab1'
     },
     sectionLayout: {
       profile: { order: 0, tabId: '_tab1', width: 'full' },
       plotPoints: { order: 1, tabId: '_tab1', width: 'full' },
-      simpleTraits: { order: 2, tabId: '_tab1', width: 'full' },
-      _11: { order: 3, tabId: '_tab1', width: 'full' },
-      _12: { order: 4, tabId: '_tab1', width: 'full' },
-      assets: { order: 5, tabId: '_tab1', width: 'full' },
-      complications: { order: 6, tabId: '_tab1', width: 'full' }
+      _11: { order: 2, tabId: '_tab1', width: 'full' },
+      _12: { order: 3, tabId: '_tab1', width: 'full' },
+      assets: { order: 4, tabId: '_tab1', width: 'full' },
+      complications: { order: 5, tabId: '_tab1', width: 'full' }
     },
     showProfileImage: true,
     tabs: {
@@ -49,6 +47,7 @@ export default {
             id: '_111',
             label: '',
             name: 'Distinction 1',
+            valueType: 'die',
             sfx: {
               0: {
                 label: 'Hinder',
@@ -67,6 +66,7 @@ export default {
             id: '_112',
             label: '',
             name: 'Distinction 2',
+            valueType: 'die',
             sfx: {
               0: {
                 label: 'Hinder',
@@ -85,6 +85,7 @@ export default {
             id: '_113',
             label: '',
             name: 'Distinction 3',
+            valueType: 'die',
             sfx: {
               0: {
                 label: 'Hinder',
@@ -139,14 +140,13 @@ export default {
     sectionTabs: {
       profile: '_tab2',
       plotPoints: '_tab2',
-      simpleTraits: '_tab2',
       assets: '_tab2',
       complications: '_tab2'
     },
     sectionLayout: {
       profile: { order: 0, tabId: '_tab2', width: 'full' },
       plotPoints: { order: 1, tabId: '_tab2', width: 'full' },
-      simpleTraits: { order: 2, tabId: '_tab2', width: 'full' },
+      _25: { order: 2, tabId: '_tab2', width: 'full' },
       _21: { order: 3, tabId: '_tab2', width: 'full' },
       _22: { order: 4, tabId: '_tab2', width: 'full' },
       _23: { order: 5, tabId: '_tab2', width: 'full' },
@@ -159,24 +159,6 @@ export default {
       0: {
         id: '_tab2',
         label: 'Traits'
-      }
-    },
-    simpleTraits: {
-      0: {
-        dice: {
-          id: '_21',
-          value: {
-            0: '6',
-            1: '6'
-          }
-        },
-        hasDescription: false,
-        label: 'Doom Pool',
-        settings: {
-          diceConsumable: false,
-          editable: true,
-          valueType: 'dice'
-        }
       }
     },
     traitSets: {
@@ -254,6 +236,33 @@ export default {
           hasSubTraits: true,
           subTraitsHaveDice: true,
           subTraitsDiceConsumable: false
+        }
+      },
+      4: {
+        description: null,
+        hasDescription: false,
+        id: '_25',
+        label: 'Doom Pool',
+        shutdown: false,
+        tabId: '_tab2',
+        settings: {
+          hasDescription: false,
+          hasDescriptors: false,
+          hasDice: true,
+          hasLabel: false,
+          hasSfx: false,
+          hasSubTraits: false,
+          diceConsumable: false,
+          subTraitsHaveDice: false,
+          subTraitsDiceConsumable: false
+        },
+        traits: {
+          0: {
+            dice: { value: { 0: '6', 1: '6' } },
+            id: '_251',
+            name: 'Doom Pool',
+            valueType: 'die'
+          }
         }
       }
     }

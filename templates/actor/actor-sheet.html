@@ -59,16 +59,6 @@
                           {{> "systems/cortexprime/templates/partials/pp.html" owner=../../owner pp=../../data.system.pp}}
                         </div>
                       </section>
-                    {{else if (and (eq section.type 'simpleTraits') ../../data.system.actorType.simpleTraits)}}
-                      <section class="section-cpt mb-4">
-                        <div class="section-image"></div>
-                        <div class="section-content">
-                          {{> "systems/cortexprime/templates/partials/actor-sheet/simple-traits.html"
-                            data=../../data.system.actorType owner=../../owner
-                            simpleTraits=../../data.system.actorType.simpleTraits path="system.actorType.simpleTraits"
-                          }}
-                        </div>
-                      </section>
                     {{else if (eq section.type 'traitSet')}}
                       {{> "systems/cortexprime/templates/partials/actor-sheet/trait-sets.html"
                         data=../../data.system.actorType owner=../../owner

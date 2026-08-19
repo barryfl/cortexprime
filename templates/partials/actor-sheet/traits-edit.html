@@ -49,14 +49,14 @@
               {{/if}}
               <div class="flex-col flex-s-1 px-0{{ternary (or ../custom ../settings.hasLabel) ' max-50' ''}}">
                 <div class="flex flex-ac">
-                  {{#if ../settings.hasDice}}
+                  {{#if (and (eq trait.valueType 'die') ../settings.hasDice)}}
                     {{> "systems/cortexprime/templates/partials/dice/select.html"
                       addToPool=true
-                      consumable=../settings.consumableDice
+                      consumable=trait.valueSettings.consumableDice
                       dice=trait.dice.value
                       minDice=0
                       label=(ternary (and ../settings.hasLabel trait.label) trait.label trait.name)
-                      selectName=(concat ../path '.' ../target '.' traitIndex '.dice')
+                      selectName=(concat trait._source.formPath '.dice')
                     }}
                   {{/if}}
                   <div>
@@ -79,6 +79,15 @@
                 </div>
               </div>
             </div>
+            {{#if (eq trait.valueType 'text')}}
+              {{> "systems/cortexprime/templates/partials/value-types/text.html"
+                data=trait edit=true fieldPath=(concat trait._source.formPath '.text')
+              }}
+            {{else if (eq trait.valueType 'number')}}
+              {{> "systems/cortexprime/templates/partials/value-types/number.html"
+                data=trait edit=true fieldPath=(concat trait._source.formPath '.number') settings=trait.valueSettings
+              }}
+            {{/if}}
           </div>
           {{#if ../settings.hasLabel}}
             {{#if ../custom}}

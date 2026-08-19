@@ -4,6 +4,7 @@
  */
 import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objectSome } from '../../lib/helpers.js'
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
+import { mergeActorTypeSettings, normalizeActorType } from './normalizeActorType.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
   removeItems,
@@ -12,7 +13,7 @@ import {
 
 const { HandlebarsApplicationMixin } = foundry.applications.api
 const { ActorSheetV2 } = foundry.applications.sheets
-const actorSheetSectionKeys = ['profile', 'plotPoints', 'simpleTraits', 'assets', 'complications']
+const actorSheetSectionKeys = ['profile', 'plotPoints', 'assets', 'complications']
 const actorSheetSectionWidths = ['full', 'half', 'third']
 
 export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
@@ -71,7 +72,9 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const context = await super._prepareContext(options)
     const themes = game.settings.get('cortexprime', 'themes')
     const theme = themes.current === 'custom' ? themes.custom : themes.list[themes.current]
-    const actorType = this.actor.system.actorType
+    const actorType = normalizeActorType(this.actor.system.actorType, {
+      legacyLabel: localizer('SimpleTraits')
+    })
     const configuredTabs = actorType?.tabs && getLength(actorType.tabs)
       ? Object.values(actorType.tabs)
       : [{ id: 'traits', label: localizer('Traits') }]
@@ -80,18 +83,18 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     const defaultTabId = configuredTabIds[0]
     const traitSets = Object.entries(actorType?.traitSets ?? {})
     const naturalSections = [
-      ...actorSheetSectionKeys.slice(0, 3).map((id, order) => ({ id, order, type: id })),
+      ...actorSheetSectionKeys.slice(0, 2).map((id, order) => ({ id, order, type: id })),
       ...traitSets.map(([traitSetIndex, traitSet], index) => ({
         id: traitSet.id,
-        order: index + 3,
+        order: index + 2,
         traitSet,
         traitSetIndex,
         traitSets: { [traitSetIndex]: traitSet },
         type: 'traitSet'
       })),
-      ...actorSheetSectionKeys.slice(3).map((id, index) => ({
+      ...actorSheetSectionKeys.slice(2).map((id, index) => ({
         id,
-        order: traitSets.length + index + 3,
+        order: traitSets.length + index + 2,
         type: id
       }))
     ]
@@ -103,7 +106,6 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
         ...section,
         enabled: section.type === 'profile' || section.type === 'traitSet' ||
           (section.type === 'plotPoints' && actorType?.hasPlotPoints) ||
-          (section.type === 'simpleTraits' && getLength(actorType?.simpleTraits)) ||
           (section.type === 'assets' && actorType?.hasAssets) ||
           (section.type === 'complications' && actorType?.hasComplications),
         order: Number.isFinite(Number(layout.order)) ? Number(layout.order) : section.order,
@@ -123,11 +125,14 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       sheetTabId: `trait-${tab.id}`,
     }))
 
+    const data = this.actor.toObject(false)
+    data.system.actorType = actorType
+
     return {
       ...context,
       actor: this.actor,
       actorTabs,
-      data: this.actor.toObject(false),
+      data,
       notesTabClass: this._activeSheetTab === 'notes' ? 'active' : '',
       owner: this.actor.isOwner,
       cssClass: this.isEditable ? 'editable' : 'locked',
@@ -335,6 +340,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       [getLength(currentCustomTraits)]: {
         id: `_${Date.now()}`,
         name: localizer('NewTrait'),
+        valueType: 'die',
         dice: {
           value: {
             0: '8'
@@ -552,58 +558,9 @@ return foundry.applications.api.DialogV2.wait({
       return
     }
 
-    const newData = {
-      ...actorData,
-      ...objectMapValues(actorTypeSettings, (propValue, key) => {
-        if (key === 'simpleTraits') {
-          return objectMapValues(propValue, ({ dice, hasDescription, id, label, settings }) => {
-            const matchingSetting = objectFindValue((actorData.simpleTraits ?? {}), ({ id: matchId }) => matchId === id) ?? {}
+    const newData = mergeActorTypeSettings(actorData, actorTypeSettings)
 
-            return {
-              ...matchingSetting,
-              dice: {
-                ...matchingSetting.dice,
-                consumable: dice.consumable
-              },
-              hasDescription,
-              id,
-              label,
-              settings
-            }
-          })
-        }
-
-        if (key === 'traitSets') {
-          return objectMapValues(propValue, ({ hasDescription, id, label, settings, tabId, traits }) => {
-            const matchingSetting = objectFindValue((actorData.traitSets ?? {}), ({ id: matchId }) => matchId === id) ?? {}
-
-            return {
-              ...matchingSetting,
-              description: matchingSetting.description,
-              hasDescription,
-              id,
-              label,
-              tabId,
-              shutdown: matchingSetting.shutdown,
-              settings,
-              traits: objectMapValues(traits ?? {}, trait => {
-                const matchingTraitSetting = objectFindValue(matchingSetting.traits ?? {}, ({ id: matchId }) => matchId === trait.id) ?? {}
-                return {
-                  ...matchingTraitSetting,
-                  id: trait.id,
-                  name: trait.name
-                }
-              })
-            }
-          })
-        }
-
-        return propValue
-      })
-    }
-
-    this._resetDataPoint('system', 'actorType', newData)
-    this.actor.update()
+    await this._resetDataPoint('system', 'actorType', newData)
   }
 
   async close (options = {}) {

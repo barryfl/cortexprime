@@ -1,13 +1,13 @@
 import { localizer } from '../scripts/foundryHelpers.js'
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { CortexPrimeApplication } from '../applications/CortexPrimeApplication.js'
+import { normalizeActorType } from '../actor/normalizeActorType.js'
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 
 const actorSheetSections = {
   profile: 'ProfileIdentity',
   plotPoints: 'PlotPoints',
-  simpleTraits: 'SimpleTraits',
   assets: 'Assets',
   complications: 'Complications'
 }
@@ -46,7 +46,13 @@ export default class ActorSettings extends CortexPrimeApplication {
     const breadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs') ?? {}
     const actorTypes = foundry.utils.deepClone(game.settings.get('cortexprime', 'actorTypes') ?? {})
 
-    for (const actorType of Object.values(actorTypes)) {
+    for (const [actorTypeIndex, rawActorType] of Object.entries(actorTypes)) {
+      const actorType = normalizeActorType(rawActorType, {
+        formPath: `actorTypes.${actorTypeIndex}`,
+        legacyLabel: localizer('SimpleTraits'),
+        sourcePath: actorTypeIndex
+      })
+      actorTypes[actorTypeIndex] = actorType
       const tabs = actorType.tabs && getLength(actorType.tabs)
         ? actorType.tabs
         : { 0: { id: 'traits', label: localizer('Traits') } }
@@ -54,17 +60,19 @@ export default class ActorSettings extends CortexPrimeApplication {
       const defaultTabId = tabIds[0]
       const traitSets = Object.entries(actorType.traitSets ?? {})
       const naturalSections = [
-        ...Object.entries(actorSheetSections).slice(0, 3).map(([id, label], order) => ({ id, label: localizer(label), order })),
+        ...Object.entries(actorSheetSections).slice(0, 2).map(([id, label], order) => ({ id, label: localizer(label), layoutId: id, order })),
         ...traitSets.map(([traitSetIndex, traitSet], index) => ({
           id: traitSet.id,
           label: traitSet.label || localizer('TraitSet'),
-          order: index + 3,
+          layoutId: traitSet._compatibility?.layoutId ?? traitSet.id,
+          order: index + 2,
           traitSetIndex
         })),
-        ...Object.entries(actorSheetSections).slice(3).map(([id, label], index) => ({
+        ...Object.entries(actorSheetSections).slice(2).map(([id, label], index) => ({
           id,
           label: localizer(label),
-          order: traitSets.length + index + 3
+          layoutId: id,
+          order: traitSets.length + index + 2
         }))
       ]
 
@@ -124,7 +132,6 @@ export default class ActorSettings extends CortexPrimeApplication {
     const clickHandlers = {
       '#add-new-actor-type': this._addNewActorType,
       '.add-descriptor': this._addDescriptor,
-      '.add-simple-trait': this._addSimpleTrait,
       '.add-sfx': this._addSfx,
       '.add-sub-trait': this._addSubTrait,
       '.add-tab': this._addTab,
@@ -155,7 +162,7 @@ export default class ActorSettings extends CortexPrimeApplication {
           return this._breadcrumbNameChange(event)
         }
 
-        if (event.target.classList.contains('input-checkbox-cpt')) {
+        if (event.target.classList.contains('input-checkbox-cpt') || event.target.classList.contains('value-type-select')) {
           await this._saveCurrentForm()
           await this.render({ force: true })
         }
@@ -263,38 +270,6 @@ export default class ActorSettings extends CortexPrimeApplication {
     await this.render({ force: true })
   }
 
-  async _addSimpleTrait (event) {
-    event.preventDefault()
-    await this._saveCurrentForm()
-    const source = game.settings.get('cortexprime', 'actorTypes')
-    const { actorType: actorTypeKey } = event.currentTarget.dataset
-    const newKey = getLength(source[actorTypeKey]?.simpleTraits || {})
-
-    const newSimpleTrait = {
-      [actorTypeKey]: {
-        simpleTraits: {
-          [newKey]: {
-            dice: {
-              value: {
-                0: '8'
-              }
-            },
-            id: `_${Date.now()}`,
-            label: localizer('NewSimpleTrait'),
-            settings: {
-              editable: true,
-              valueType: 'text'
-            }
-          }
-        }
-      }
-    }
-
-    await game.settings.set('cortexprime', 'actorTypes', foundry.utils.mergeObject(source, newSimpleTrait))
-    await this.changeView(localizer('NewSimpleTrait'), `simpleTrait-${actorTypeKey}-${newKey}`)
-    await this.render({ force: true })
-  }
-
   async _addTrait (event) {
     event.preventDefault()
     await this._saveCurrentForm()
@@ -308,6 +283,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       [newKey]: {
         id: `_${Date.now()}`,
         name: localizer('NewTrait'),
+        valueType: 'die',
         dice: {
           value: {
             0: '8'
@@ -332,7 +308,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     const defaultTabId = Object.values(source[actorTypeKey]?.tabs ?? {})[0]?.id ?? 'traits'
     const traitSetId = `_${Date.now()}`
     const sectionLayout = source[actorTypeKey]?.sectionLayout ?? {}
-    const nextOrder = getLength(source[actorTypeKey]?.traitSets ?? {}) + 3
+    const nextOrder = getLength(source[actorTypeKey]?.traitSets ?? {}) + 2
 
     for (const layout of Object.values(sectionLayout)) {
       if (Number(layout.order) >= nextOrder) layout.order = Number(layout.order) + 1
@@ -433,6 +409,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     const layout = actorType?.sectionLayout ?? {}
     const validSectionIds = new Set([
       ...Object.keys(actorSheetSections),
+      ...(actorType?.simpleTraits && getLength(actorType.simpleTraits) ? ['simpleTraits'] : []),
       ...Object.values(actorType?.traitSets ?? {}).map(traitSet => traitSet.id)
     ])
     const orderedIds = Object.entries(layout)

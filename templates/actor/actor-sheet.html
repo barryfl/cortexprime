@@ -22,6 +22,7 @@
       {{#if (and (or data.system.actorType.traitSetEdit (eq data.system.actorType.traitSetEdit 0)) owner)}}
         {{> "systems/cortexprime/templates/partials/actor-sheet/trait-set-edit.html"
           data=data.system.actorType
+          editable=editable
           traitSet=(lookup data.system.actorType.traitSets data.system.actorType.traitSetEdit)
           traitSetIndex=data.system.actorType.traitSetEdit
           path="system.actorType.traitSets"
@@ -62,6 +63,7 @@
                     {{else if (eq section.type 'traitSet')}}
                       {{> "systems/cortexprime/templates/partials/actor-sheet/trait-sets.html"
                         data=../../data.system.actorType owner=../../owner
+                        editable=../../editable
                         traitSets=section.traitSets path="system.actorType.traitSets"
                       }}
                     {{else if (and (eq section.type 'assets') ../../data.system.actorType.hasAssets)}}

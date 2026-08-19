@@ -1,4 +1,6 @@
-const VALUE_TYPES = new Set(['die', 'number', 'text'])
+import { prepareResourceView } from './resourceTraits.js'
+
+const VALUE_TYPES = new Set(['die', 'number', 'resource', 'text'])
 
 const clone = value => {
   if (Array.isArray(value)) return value.map(clone)
@@ -46,6 +48,7 @@ export function normalizeActorType (input, {
           ...(trait.valueSettings ?? {}),
           consumableDice: trait.valueSettings?.consumableDice ?? traitSet.settings?.diceConsumable ?? traitSet.settings?.consumableDice ?? false
         }
+        if (trait.valueType === 'resource') trait._resourceView = prepareResourceView(trait)
         trait._source = sourceMetadata(
           `${collectionPath}.${traitKey}`,
           `${formCollectionPath}.${traitKey}`,

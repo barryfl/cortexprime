@@ -22,6 +22,7 @@
         <option value="{{ternary trait._source.compatibility 'dice' 'die'}}" {{#if (eq trait.valueType 'die')}}selected{{/if}}>{{localize 'DieRating'}}</option>
         <option value="number" {{#if (eq trait.valueType 'number')}}selected{{/if}}>{{localize 'Number'}}</option>
         <option value="text" {{#if (eq trait.valueType 'text')}}selected{{/if}}>{{localize 'Text'}}</option>
+        {{#unless trait._source.compatibility}}<option value="resource" {{#if (eq trait.valueType 'resource')}}selected{{/if}}>{{localize 'Resource'}}</option>{{/unless}}
       </select>
     </div>
     {{#if trait._source.compatibility}}
@@ -59,6 +60,11 @@
       }}
     {{else if (eq trait.valueType 'text')}}
       {{> "systems/cortexprime/templates/partials/settings/value-types/text.html" data=trait fieldPath=fieldPath path=path}}
+    {{else if (eq trait.valueType 'resource')}}
+      {{> "systems/cortexprime/templates/partials/settings/value-types/resource.html"
+        imagePath=(concat path '.valueSettings.image')
+        settings=trait.valueSettings settingsFieldPath=(concat fieldPath '.valueSettings')
+      }}
     {{/if}}
     {{#if settings.hasSubTraits}}
       <div class="separator-cpt"></div>

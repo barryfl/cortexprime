@@ -1,6 +1,7 @@
 import { UserDicePool } from './applications/UserDicePool.js'
 import { localizer, setCssVars } from './scripts/foundryHelpers.js'
 import rollDice from './scripts/rollDice.js'
+import { initializeActorTypeResources } from './actor/resourceTraits.js'
 
 export default () => {
   Hooks.on('renderDialogV2', (application, element) => {
@@ -38,7 +39,7 @@ export default () => {
 
     actor.updateSource({
       img: actorType.defaultImage,
-      'system.actorType': foundry.utils.deepClone(actorType),
+      'system.actorType': initializeActorTypeResources(actorType),
       'system.pp.value': actorType.hasPlotPoints ? 1 : 0
     })
   })
@@ -226,4 +227,3 @@ Hooks.on('renderChatMessageHTML', async (message, html, data) => {
       await game.cortexprime.UserDicePool._setPool(pool)
     })
 })
-

@@ -7,6 +7,7 @@ import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { normalizeActorType } from './normalizeActorType.js'
 import { syncActorWithActorType } from './syncActorType.js'
 import { appendCustomTrait, canCreateCustomTrait, isCustomTraitSetPath } from './customTraits.js'
+import { changeResourceValue, initializeActorTypeResources, isResourceTraitPath, pruneImplicitResourceSettings } from './resourceTraits.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
@@ -44,6 +45,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       addToPool: function (event, target) { return this._addToPool(event, target) },
       addTrait: function (event, target) { return this._addTrait(event, target) },
       closeTraitSetEdit: function (event) { return this._closeTraitSetEdit(event) },
+      changeResource: function (event, target) { return this._changeResource(event, target) },
       newDie: function (event, target) { return this._newDie(event, target) },
       removeItem: function (event, target) { return removeItems.call(this, event, target) },
       spendPp: function () { return this._spendPp() },
@@ -51,7 +53,8 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       traitSetEdit: function (event, target) { return this._traitSetEdit(event, target) },
       updateActorSettings: function (event) { return this._updateActorSettings(event) },
       editProfileImage: function (event, target) {return this._editProfileImage(event, target)},
-      openHelp: function () {new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)}
+      openHelp: function () {new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)},
+      resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) }
     },
     form: {
       closeOnSubmit: false,
@@ -142,6 +145,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       actor: this.actor,
       actorTabs,
       data,
+      editable: this.actor.isOwner && this.isEditable,
       notesTabClass: this._activeSheetTab === 'notes' ? 'active' : '',
       owner: this.actor.isOwner,
       cssClass: this.isEditable ? 'editable' : 'locked',
@@ -154,6 +158,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     if (!form || event?.target?.classList?.contains('die-select') || event?.target?.classList?.contains('pp-number-field')) return
 
     const updateData = foundry.utils.deepClone(submittedFormData.object)
+    pruneImplicitResourceSettings(updateData, this.actor.toObject(false))
 
     this._savePromise = this._savePromise.then(() => this.actor.update(updateData))
     return this._savePromise
@@ -186,6 +191,13 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     for (const field of this.element.querySelectorAll('.pp-number-field')) {
       field.addEventListener('change', event => this._ppNumberChange(event))
     }
+
+    for (const select of this.element.querySelectorAll('.actor-value-type-select, .resource-image-display-select')) {
+      select.addEventListener('change', async () => {
+        await this._saveCurrentForm()
+        await this.render({ force: true })
+      })
+    }
   }
 
   /* -------------------------------------------- */
@@ -208,7 +220,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
 
     await this.actor.update({
       'img': actorType.defaultImage,
-      'system.actorType': actorType,
+      'system.actorType': initializeActorTypeResources(actorType),
       'system.pp.value': actorType.hasPlotPoints ? 1 : 0
     })
   }
@@ -374,6 +386,38 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     await this.actor.update({
       ['system.actorType.traitSetEdit']: null
     })
+  }
+
+  async _changeResource (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { direction, traitPath } = target.dataset
+    await this._saveCurrentForm()
+    if (!this.isEditable || !this.actor.isOwner || !isResourceTraitPath(traitPath)) return
+
+    const trait = foundry.utils.getProperty(this.actor, traitPath)
+    if (trait?.valueType !== 'resource') return
+
+    await this.actor.update({
+      [`${traitPath}.resource.value`]: changeResourceValue(trait, direction)
+    })
+  }
+
+  async _resourceImagePicker (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { path } = target.dataset
+    await this._saveCurrentForm()
+    const traitPath = path?.replace(/\.valueSettings\.image$/, '')
+    if (!this.isEditable || !this.actor.isOwner || !isResourceTraitPath(traitPath)) return
+
+    const picker = new foundry.applications.apps.FilePicker({
+      type: 'image',
+      current: foundry.utils.getProperty(this.actor, path) ?? '',
+      callback: async image => {
+        await this.actor.update({ [path]: image })
+        await this.render({ force: true })
+      }
+    })
+    await picker.render(true)
   }
 
 async _getConsumableDiceSelection (options, label) {

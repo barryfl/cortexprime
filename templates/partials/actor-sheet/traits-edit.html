@@ -16,6 +16,17 @@
         <div class="flex flex-wrap relative-section pa-2">
           <div class="section-background"></div>
           <div class="flex-col col-12">
+            {{#if ../custom}}
+              <label>
+                <span class="input-label-cpt">{{localize 'ValueType'}}</span>
+                <select class="input-cpt actor-value-type-select" name="{{concat trait._source.formPath '.valueType'}}">
+                  <option value="die" {{#if (eq trait.valueType 'die')}}selected{{/if}}>{{localize 'DieRating'}}</option>
+                  <option value="number" {{#if (eq trait.valueType 'number')}}selected{{/if}}>{{localize 'Number'}}</option>
+                  <option value="text" {{#if (eq trait.valueType 'text')}}selected{{/if}}>{{localize 'Text'}}</option>
+                  <option value="resource" {{#if (eq trait.valueType 'resource')}}selected{{/if}}>{{localize 'Resource'}}</option>
+                </select>
+              </label>
+            {{/if}}
             <div class="flex-row flex-wrap {{ternary (or ../custom ../settings.hasLabel) 'flex-ae' 'flex-ac'}}">
               {{#if (or ../custom ../settings.hasLabel)}}
                 <div class="flex-col flex-g-1">
@@ -86,6 +97,18 @@
             {{else if (eq trait.valueType 'number')}}
               {{> "systems/cortexprime/templates/partials/value-types/number.html"
                 data=trait edit=true fieldPath=(concat trait._source.formPath '.number') settings=trait.valueSettings
+              }}
+            {{else if (eq trait.valueType 'resource')}}
+              {{#if ../custom}}
+                {{> "systems/cortexprime/templates/partials/settings/value-types/resource.html"
+                  settings=trait.valueSettings settingsFieldPath=(concat trait._source.formPath '.valueSettings')
+                }}
+              {{/if}}
+              {{> "systems/cortexprime/templates/partials/value-types/resource.html"
+                editable=../editable
+                label=(ternary (and ../settings.hasLabel trait.label) trait.label trait.name)
+                traitPath=trait._source.formPath
+                view=trait._resourceView
               }}
             {{/if}}
           </div>

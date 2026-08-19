@@ -1076,6 +1076,30 @@
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   content: "\f522";
 }
+.cortexprime .resource-cpt {
+  gap: 0.4rem;
+}
+.cortexprime .resource-image-cpt {
+  height: 2rem;
+  -o-object-fit: contain;
+  object-fit: contain;
+  width: 2rem;
+}
+.cortexprime .resource-consume-cpt {
+  line-height: 0;
+  padding: 0;
+}
+.cortexprime .resource-consume-cpt:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.cortexprime .resource-label-cpt {
+  font-weight: bold;
+}
+.cortexprime .resource-value-cpt {
+  min-width: 2rem;
+  text-align: center;
+}
 .cortexprime.application.cortexprime-application .window-content {
   overflow-x: hidden;
   overflow-y: auto;

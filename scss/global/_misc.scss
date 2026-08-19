@@ -47,6 +47,35 @@
   }
 }
 
+.resource-cpt {
+  gap: 0.4rem;
+}
+
+.resource-image-cpt {
+  height: 2rem;
+  object-fit: contain;
+  width: 2rem;
+}
+
+.resource-consume-cpt {
+  line-height: 0;
+  padding: 0;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.resource-label-cpt {
+  font-weight: bold;
+}
+
+.resource-value-cpt {
+  min-width: 2rem;
+  text-align: center;
+}
+
 &.application.cortexprime-application {
   .window-content {
     overflow-x: hidden;

@@ -1,0 +1,27 @@
+<div class="resource-cpt flex flex-ac flex-wrap">
+  {{#if (and editable (eq view.imageDisplay 'none'))}}
+    <button class="btn btn-icon btn-secondary-cpt" data-action="changeResource" data-direction="-1" data-trait-path="{{traitPath}}" title="{{localize 'Decrement'}}" type="button" {{#unless view.canDecrement}}disabled{{/unless}}>
+      <i class="fa fa-minus"></i>
+    </button>
+  {{else if (and editable (eq view.imageDisplay 'consume'))}}
+    <button class="btn resource-consume-cpt" data-action="changeResource" data-direction="-1" data-trait-path="{{traitPath}}" title="{{localize 'ConsumeResource'}}" type="button" {{#unless view.canDecrement}}disabled{{/unless}}>
+      <img class="resource-image-cpt" src="{{view.image}}" alt="">
+    </button>
+  {{else if (or (eq view.imageDisplay 'icon') (eq view.imageDisplay 'consume'))}}
+    <img class="resource-image-cpt" src="{{view.image}}" alt="" aria-hidden="true">
+  {{/if}}
+  <span class="resource-label-cpt">{{label}}</span>
+  <span class="resource-value-cpt">
+    {{view.value}}{{#if view.hasMax}} / {{view.max}}{{/if}}
+  </span>
+  {{#if (and editable (eq view.imageDisplay 'icon'))}}
+    <button class="btn btn-icon btn-secondary-cpt" data-action="changeResource" data-direction="-1" data-trait-path="{{traitPath}}" title="{{localize 'Decrement'}}" type="button" {{#unless view.canDecrement}}disabled{{/unless}}>
+      <i class="fa fa-minus"></i>
+    </button>
+  {{/if}}
+  {{#if editable}}
+    <button class="btn btn-icon btn-primary-cpt" data-action="changeResource" data-direction="1" data-trait-path="{{traitPath}}" title="{{localize 'Increment'}}" type="button" {{#unless view.canIncrement}}disabled{{/unless}}>
+      <i class="fa fa-plus"></i>
+    </button>
+  {{/if}}
+</div>

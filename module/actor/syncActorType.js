@@ -1,3 +1,5 @@
+import { initializeResourceTrait } from './resourceTraits.js'
+
 const clone = value => {
   if (Array.isArray(value)) return value.map(clone)
   if (!value || typeof value !== 'object') return value
@@ -9,7 +11,7 @@ const hasOwn = (object, key) => Object.hasOwn(object ?? {}, key)
 const identity = (value, key) => value?.id ?? `key:${key}`
 const legacySimpleIdentity = (value, key) => value?.id ?? value?.dice?.id ?? `key:${key}`
 
-const mergeOrderedUnion = (actorCollection, templateCollection, mergeMatch, getIdentity = identity) => {
+const mergeOrderedUnion = (actorCollection, templateCollection, mergeMatch, getIdentity = identity, createTemplate = clone) => {
   const actorEntries = Object.entries(actorCollection ?? {})
   const usedActorKeys = new Set()
   const values = []
@@ -24,7 +26,7 @@ const mergeOrderedUnion = (actorCollection, templateCollection, mergeMatch, getI
       usedActorKeys.add(match[0])
       values.push(mergeMatch(match[1], templateValue))
     } else {
-      values.push(clone(templateValue))
+      values.push(createTemplate(templateValue))
     }
   }
 
@@ -80,6 +82,7 @@ const mergePresetTrait = (actorTrait, templateTrait, preserveActorLabel = false)
   merged.dice = mergeCurrentValue(actorTrait?.dice, templateTrait?.dice)
   merged.number = mergeCurrentValue(actorTrait?.number, templateTrait?.number)
   merged.text = mergeCurrentValue(actorTrait?.text, templateTrait?.text)
+  merged.resource = mergeCurrentValue(actorTrait?.resource, templateTrait?.resource)
 
   if (actorTrait?.descriptors || templateTrait?.descriptors) {
     merged.descriptors = mergeNestedDefinitions(actorTrait?.descriptors, templateTrait?.descriptors)
@@ -91,7 +94,11 @@ const mergePresetTrait = (actorTrait, templateTrait, preserveActorLabel = false)
     merged.subTraits = mergeNestedDefinitions(actorTrait?.subTraits, templateTrait?.subTraits)
   }
 
-  for (const key of ['dice', 'number', 'text']) {
+  if (merged.valueType === 'resource' && !hasOwn(merged.resource, 'value')) {
+    merged.resource = initializeResourceTrait(merged).resource
+  }
+
+  for (const key of ['dice', 'number', 'resource', 'text']) {
     if (merged[key] === undefined) delete merged[key]
   }
   return merged
@@ -104,7 +111,9 @@ const mergeTraitSet = (actorSet, templateSet) => {
   merged.traits = mergeOrderedUnion(
     actorSet?.traits,
     templateSet?.traits,
-    (actorTrait, templateTrait) => mergePresetTrait(actorTrait, templateTrait, templateSet?.settings?.hasLabel)
+    (actorTrait, templateTrait) => mergePresetTrait(actorTrait, templateTrait, templateSet?.settings?.hasLabel),
+    identity,
+    initializeResourceTrait
   )
   return merged
 }

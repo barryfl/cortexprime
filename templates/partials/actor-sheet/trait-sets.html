@@ -31,6 +31,7 @@
         {{#if traitSet.traits}}
           {{> "systems/cortexprime/templates/partials/actor-sheet/traits.html"
             data=../data
+            editable=../editable
             owner=../owner
             path=(concat ../path '.' traitSetIndex)
             settings=traitSet.settings
@@ -43,6 +44,7 @@
           {{> "systems/cortexprime/templates/partials/actor-sheet/traits.html"
             custom=true
             data=../data
+            editable=../editable
             owner=../owner
             path=(concat ../path '.' traitSetIndex)
             settings=traitSet.settings

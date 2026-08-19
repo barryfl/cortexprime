@@ -77,3 +77,11 @@ test('preserves raw legacy representation for import/export', () => {
 
   assert.equal(JSON.stringify(imported), serialized)
 })
+
+test('recognizes Resource while retaining unknown-type die compatibility', () => {
+  const normalized = normalizeActorType({
+    traitSets: { 0: { traits: { 0: { valueType: 'resource', resource: { value: 0 } }, 1: { valueType: 'unknown' } } } }
+  })
+  assert.equal(normalized.traitSets[0].traits[0].valueType, 'resource')
+  assert.equal(normalized.traitSets[0].traits[1].valueType, 'die')
+})

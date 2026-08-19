@@ -6,6 +6,7 @@ import { isPredefinedSectionAvailable, isSectionPlacementEnabled, PREDEFINED_ACT
 import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduce, objectReindexFilter } from '../../lib/helpers.js'
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 import { actorsMatchingActorType, syncActorsWithActorType } from '../actor/syncActorType.js'
+import { pruneImplicitResourceSettings } from '../actor/resourceTraits.js'
 
 const actorSheetSections = Object.fromEntries(PREDEFINED_ACTOR_SHEET_SECTIONS.map(({ id, label }) => [id, label]))
 const sheetSectionWidths = ['full', 'half', 'third']
@@ -17,6 +18,9 @@ export default class ActorSettings extends CortexPrimeApplication {
     id: 'actor-settings',
     tag: 'form',
     classes: ['cortexprime', 'cortexprime-application', 'actor-settings'],
+    actions: {
+      resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) }
+    },
     form: {
       closeOnSubmit: false,
       submitOnChange: true,
@@ -114,6 +118,7 @@ export default class ActorSettings extends CortexPrimeApplication {
     const actorTypes = foundry.utils.deepClone(
       submittedData.actorTypes ?? foundry.utils.expandObject(submittedData).actorTypes ?? {}
     )
+    pruneImplicitResourceSettings(actorTypes, game.settings.get('cortexprime', 'actorTypes') ?? {})
 
     this._savePromise = this._savePromise.then(async () => {
       const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
@@ -544,6 +549,26 @@ export default class ActorSettings extends CortexPrimeApplication {
 
   await imagePicker.render(true)
 }
+
+  async _resourceImagePicker (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { path } = target.dataset
+    await this._saveCurrentForm()
+    if (!/^[^.]+\.traitSets\.[^.]+\.traits\.[^.]+\.valueSettings\.image$/.test(path ?? '')) return
+
+    const source = game.settings.get('cortexprime', 'actorTypes')
+    const picker = new foundry.applications.apps.FilePicker({
+      type: 'image',
+      current: foundry.utils.getProperty(source, path) ?? '',
+      callback: async image => {
+        const latest = game.settings.get('cortexprime', 'actorTypes')
+        foundry.utils.setProperty(latest, path, image)
+        await game.settings.set('cortexprime', 'actorTypes', latest)
+        await this.render({ force: true })
+      }
+    })
+    await picker.render(true)
+  }
 
   async changeView (name, target) {
     const currentBreadcrumbs = game.settings.get('cortexprime', 'actorBreadcrumbs')

@@ -47,7 +47,7 @@
                 <span class="trait-title-cpt flex-col">{{sourceName}}</span>
                 <div class="flex-col">
                   <button class="btn btn-secondary-cpt clear-source" data-action="clearSource" data-source="{{sourceName}}" type="button">
-                    {{localize 'Clear'}}
+                    {{localize 'RemoveSource'}}
                   </button>
                 </div>
               </div>
@@ -94,10 +94,6 @@
         <div class="relative-section">
           <div class="section-background"></div>
           <div class="flex-col col-12 flex flex-wrap flex-je py-2">
-            <div class="flex-col flex flex-ac">
-              <button class="clear-dice-pool btn btn-secondary-cpt" data-action="clearPool" type="button">{{localize 'Clear'}}</button>
-              <button class="export-pool-macro btn btn-secondary-cpt ml-1" data-action="exportMacro" type="button">{{localize 'ExportToMacro'}}</button>
-            </div>
             <div class="flex-col pl-0">
               <button class="roll-dice-pool btn btn-primary-cpt" data-action="rollPool" data-roll-type="select" type="button">{{localize 'RollAndSelect'}}</button>
             </div>
@@ -106,6 +102,12 @@
             </div>
             <div class="flex-col pl-0">
               <button class="roll-dice-pool roll-for-total btn btn-primary-cpt" data-action="rollPool" data-roll-type="total" type="button">{{localize 'RollForTotal'}}</button>
+            </div>
+            <div class="flex-col pl-0">
+              <button class="clear-dice-pool btn btn-secondary-cpt" data-action="clearPool" type="button">{{localize 'ClearPool'}}</button>
+            </div>
+            <div class="flex-col pl-0">
+              <button class="export-pool-macro btn btn-secondary-cpt" data-action="exportMacro" type="button">{{localize 'ExportToMacro'}}</button>
             </div>
           </div>
         </div>

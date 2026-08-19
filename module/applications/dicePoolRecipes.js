@@ -68,11 +68,22 @@ export function createSavedPoolRecipe (pool, { id, name }) {
   return { id, name, version: 1, entries: recipeEntries }
 }
 
-export const createSavedPoolMacroData = (name, savedPoolId, userId) => ({
+export const createSavedPoolMacroData = (name, savedPoolId, userId, {
+  folderId,
+  ownerLevel = 3
+} = {}) => ({
   name,
   type: 'script',
   command: `return game.cortexprime.loadSavedPool(${JSON.stringify(savedPoolId)});`,
-  ownership: { [userId]: 3 }
+  flags: {
+    cortexprime: {
+      ownerUserId: userId,
+      savedPoolId,
+      savedPoolMacro: true
+    }
+  },
+  ...(folderId ? { folder: folderId } : {}),
+  ownership: { [userId]: ownerLevel }
 })
 
 const appendPoolEntry = (pool, source, entry) => {

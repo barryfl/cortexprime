@@ -4,6 +4,7 @@ import rollDice from '../scripts/rollDice.js'
 import { CortexPrimeApplication } from './CortexPrimeApplication.js'
 import { completeDicePoolRoll, createBlankDicePool, resetUserDicePool } from './dicePoolLifecycle.js'
 import { createSavedPoolMacroData, createSavedPoolRecipe, resolveSavedPoolRecipe } from './dicePoolRecipes.js'
+import { ensureUserDicePoolFolder } from './savedPoolMacros.js'
 
 export class UserDicePool extends CortexPrimeApplication {
   static DEFAULT_OPTIONS = {
@@ -273,7 +274,15 @@ export class UserDicePool extends CortexPrimeApplication {
     savedPools[id] = recipe
     await game.user.setFlag('cortexprime', 'savedPools', savedPools)
 
-    await Macro.create(createSavedPoolMacroData(name, id, game.user.id))
+    const folder = await ensureUserDicePoolFolder(game.user, {
+      folders: game.folders,
+      createFolder: data => Folder.create(data),
+      updateFolder: (document, change) => document.update(change)
+    })
+    await Macro.create(createSavedPoolMacroData(name, id, game.user.id, {
+      folderId: folder.id,
+      ownerLevel: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+    }))
     ui.notifications.info(game.i18n.format('SavedPoolMacroCreated', { name }))
     return recipe
   }

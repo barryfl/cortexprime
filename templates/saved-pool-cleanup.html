@@ -1,0 +1,50 @@
+<div class="sheet-cpt">
+  <div class="sheet-background"></div>
+  <div class="sheet-image"></div>
+  <div class="sheet-content pa-2">
+    {{#if isGM}}
+      <div class="section-cpt pa-2 mb-2">
+        <div class="section-background"></div>
+        <div class="section-content">
+          <h2 class="section-primary-title-cpt mt-0">{{localize 'SavedPoolCleanup'}}</h2>
+          <p>{{localize 'SavedPoolCleanupHint'}}</p>
+        </div>
+      </div>
+      {{#each groups as |group|}}
+        <section class="section-cpt mb-4">
+          <div class="section-background"></div>
+          <div class="section-content pa-2">
+            <h3 class="section-primary-title-cpt mt-0">{{group.name}}</h3>
+            {{#if group.referenced}}
+              <h4 class="section-secondary-title-cpt">{{localize 'ReferencedSavedPools'}}</h4>
+              <ul>
+                {{#each group.referenced as |recipe|}}<li>{{recipe.name}}</li>{{/each}}
+              </ul>
+            {{/if}}
+            {{#if group.orphaned}}
+              <h4 class="section-secondary-title-cpt">{{localize 'UnusedSavedPools'}}</h4>
+              <ul class="list-style-none px-0">
+                {{#each group.orphaned as |recipe|}}
+                  <li>
+                    <label class="flex flex-ac">
+                      <input name="orphanedPool" type="checkbox" value="{{recipe.selectionKey}}">
+                      <span class="ml-1">{{recipe.name}}</span>
+                    </label>
+                  </li>
+                {{/each}}
+              </ul>
+            {{/if}}
+          </div>
+        </section>
+      {{else}}
+        <p>{{localize 'NoSavedPoolsFound'}}</p>
+      {{/each}}
+      <div class="flex flex-wrap flex-je">
+        <div class="flex-col"><button class="btn btn-secondary-cpt" data-action="selectAllUnused" type="button">{{localize 'SelectAllUnused'}}</button></div>
+        <div class="flex-col"><button class="btn btn-primary-cpt" data-action="deleteSelected" type="button">{{localize 'DeleteSelected'}}</button></div>
+      </div>
+    {{else}}
+      <p>{{localize 'GmOnlySetting'}}</p>
+    {{/if}}
+  </div>
+</div>

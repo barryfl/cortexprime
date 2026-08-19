@@ -3,10 +3,20 @@ import ImportExportSettings from './ImportExportSettings.js'
 import defaultActorTypes from '../actor/defaultActorTypes.js'
 import defaultThemes from '../theme/defaultThemes.js'
 import ThemeSettings from './ThemeSettings.js'
+import SavedPoolCleanupSettings from './SavedPoolCleanupSettings.js'
 
 import { localizer } from '../scripts/foundryHelpers.js'
 
 export const registerSettings = () => {
+  game.settings.registerMenu('cortexprime', 'SavedPoolCleanup', {
+    hint: localizer('SavedPoolCleanupHint'),
+    icon: 'fa-solid fa-broom',
+    label: localizer('SavedPoolCleanup'),
+    name: localizer('SavedPoolCleanup'),
+    restricted: true,
+    type: SavedPoolCleanupSettings
+  })
+
   game.settings.registerMenu('cortexprime', 'ActorSettings', {
     hint: localizer('ActorSettingsH'),
     icon: 'fa-solid fa-user-cog',

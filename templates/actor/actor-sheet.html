@@ -68,12 +68,12 @@
                       }}
                     {{else if (and (eq section.type 'assets') ../../data.system.actorType.hasAssets)}}
                       {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-traits.html"
-                        data=../../data.system.actorType owner=../../owner path="system.actorType"
+                        data=../../data.system.actorType owner=../../owner editable=../../editable path="system.actorType"
                         showAssets=true showComplications=false
                       }}
                     {{else if (and (eq section.type 'complications') ../../data.system.actorType.hasComplications)}}
                       {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-traits.html"
-                        data=../../data.system.actorType owner=../../owner path="system.actorType"
+                        data=../../data.system.actorType owner=../../owner editable=../../editable path="system.actorType"
                         showAssets=false showComplications=true
                       }}
                     {{/if}}
@@ -93,11 +93,11 @@
                       <div class="flex-col">
                         <h2 class="my-0 section-primary-title-cpt">{{localize 'Notes'}}</h2>
                       </div>
-                      <div class="flex-col">
+                      {{#if editable}}<div class="flex-col">
                         <button class="btn btn-icon btn-primary-cpt add-note" data-action="addNote" type="button">
                           <i class="fa fa-plus"></i>
                         </button>
-                      </div>
+                      </div>{{/if}}
                     </div>
                   </div>
                 </div>
@@ -112,7 +112,7 @@
                         <label class="input-label-cpt">{{localize 'Name'}}</label>
                         <input class="input-cpt" type="text" name="system.actorType.notes.{{noteIndex}}.label" value="{{note.label}}">
                       </div>
-                      <div class="flex-col">
+                      {{#if ../editable}}<div class="flex-col">
                         {{> "systems/cortexprime/templates/partials/remove-button.html"
                           path='system.actorType'
                           target='notes'
@@ -120,7 +120,7 @@
                           itemName=note.label
                           type="trash"
                         }}
-                      </div>
+                      </div>{{/if}}
                     </header>
                     <div class="notes-field">
                       {{editor

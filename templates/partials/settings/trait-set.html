@@ -207,6 +207,16 @@
           </div>
           <div class="flex-col flex-row flex-ac">
             <div class="flex-col px-0">
+              {{> "systems/cortexprime/templates/partials/remove-button.html"
+                group=(concat ../path '.' ../traitSetIndex '.traits')
+                itemKey=traitIndex
+                itemName=trait.name
+                setting="actorTypes"
+                stayOnPage=true
+                type="trash"
+              }}
+            </div>
+            <div class="flex-col px-0">
               <button class="btn btn-icon btn-icon-plain-cpt duplicate-item" data-path="{{concat ../path '.' ../traitSetIndex '.traits'}}"
                 data-id="{{trait.id}}" type="button">
                 <i class="fa fa-clone"></i>

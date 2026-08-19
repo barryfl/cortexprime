@@ -29,7 +29,7 @@
                       </button>
                     </div>
                   {{/if}}
-                  {{#if (and ../owner asset.edit)}}
+                  {{#if (and ../owner ../editable asset.edit)}}
                     <div>
                       {{> "systems/cortexprime/templates/partials/remove-button.html"
                       path=../path
@@ -126,7 +126,7 @@
                       </button>
                     </div>
                   {{/if}}
-                  {{#if (and ../owner complication.edit)}}
+                  {{#if (and ../owner ../editable complication.edit)}}
                     <div>
                       {{> "systems/cortexprime/templates/partials/remove-button.html"
                       path=../path

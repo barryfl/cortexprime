@@ -76,7 +76,7 @@
                       <i class="fa-solid {{ternary trait.shutdown 'fa-toggle-off' 'fa-toggle-on'}}"></i>
                     </button>
                   </div>
-                  {{#if ../custom}}
+                  {{#if (and ../custom ../editable)}}
                     <div class="flex-col pa-0">
                       {{> "systems/cortexprime/templates/partials/remove-button.html"
                         path=../path
@@ -155,6 +155,7 @@
               data=trait
               fieldPath=(concat ../path '.' ../target '.' traitIndex '.subTraits')
               path=(concat ../path '.' ../target '.' traitIndex)
+              canDelete=../editable
               settings=../settings
             }}
           </div>
@@ -177,6 +178,7 @@
               data=trait
               fieldPath=(concat ../path '.' ../target '.' traitIndex '.descriptors')
               path=(concat ../path '.' ../target '.' traitIndex)
+              canDelete=../editable
             }}
           </div>
         {{/if}}
@@ -197,6 +199,7 @@
               data=trait
               fieldPath=(concat ../path '.' ../target '.' traitIndex '.sfx')
               path=(concat ../path '.' ../target '.' traitIndex)
+              canDelete=../editable
             }}
           </div>
         {{/if}}

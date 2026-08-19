@@ -35,6 +35,15 @@
         </div>
         <div class="flex-col flex-row flex-ac">
           <div class="flex-col px-0">
+            {{> "systems/cortexprime/templates/partials/remove-button.html"
+              itemKey=actorTypeIndex
+              itemName=actorType.name
+              setting="actorTypes"
+              stayOnPage=true
+              type="trash"
+            }}
+          </div>
+          <div class="flex-col px-0">
             <button class="btn btn-icon btn-icon-plain-cpt duplicate-item" data-id="{{actorType.id}}" type="button">
               <i class="fa fa-clone"></i>
             </button>

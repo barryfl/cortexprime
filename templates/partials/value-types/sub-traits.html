@@ -21,7 +21,7 @@
                 path=(concat ../path '.subTraits.' subTraitIndex '.dice')
               }}
             {{/if}}
-            <div class="flex-col">
+            {{#unless (eq ../canDelete false)}}<div class="flex-col">
               {{> "systems/cortexprime/templates/partials/remove-button.html"
                 group=(concat ../path '.subTraits')
                 itemKey=subTraitIndex
@@ -32,7 +32,7 @@
                 stayOnPage=true
                 type="trash"
               }}
-            </div>
+            </div>{{/unless}}
           </div>
         </div>
       </li>

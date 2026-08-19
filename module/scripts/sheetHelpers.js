@@ -1,5 +1,6 @@
-import { getLength, objectReindexFilter } from '../../lib/helpers.js'
+import { getLength } from '../../lib/helpers.js'
 import { localizer } from './foundryHelpers.js'
+import { isActorLocalRemoval, removeIndexedItem } from './deletionHelpers.js'
 
 export const addNewDataPoint = async function (data, path, value) {
   const currentData = data || {}
@@ -38,14 +39,13 @@ export const toggleItems = async function (event, target = event.currentTarget) 
 export const removeDataPoint = async function (data, path, target, key) {
   const currentData = data || {}
 
-  const newData = objectReindexFilter(currentData, (_, currentKey) => parseInt(currentKey, 10) !== parseInt(key, 10))
+  const newData = removeIndexedItem(currentData, key)
 
   await resetDataPoint.call(this, path, target, newData)
 }
 
 export const removeItems = async function (event, actionTarget = event.currentTarget) {
   event.preventDefault()
-  await this._saveCurrentForm()
   const {
     path,
     itemKey,
@@ -53,15 +53,18 @@ export const removeItems = async function (event, actionTarget = event.currentTa
     target
   } = actionTarget.dataset
 
-const confirmed = await foundry.applications.api.DialogV2.confirm({
-  window: {
-    title: localizer('AreYouSure')
-  },
-  content: `${localizer('Remove')} ${itemName}?`,
-  yes: {
-    default: false
-  }
-})
+  if (!this.isEditable || !this.actor.isOwner || !isActorLocalRemoval(path, target)) return false
+  await this._saveCurrentForm()
+
+  const confirmed = await foundry.applications.api.DialogV2.confirm({
+    window: {
+      title: localizer('AreYouSure')
+    },
+    content: `${localizer('Remove')} ${itemName}?`,
+    yes: {
+      default: false
+    }
+  })
 
   if (confirmed) {
     const data = foundry.utils.getProperty(this.actor, `${path}.${target}`)

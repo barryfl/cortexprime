@@ -19,7 +19,7 @@
               <input class="input-cpt {{../borderClass}}" name="{{concat ../fieldPath '.' sfxIndex '.label'}}" type="text" value="{{sfx.label}}">
             </label>
           </div>
-          <div class="flex-col">
+          {{#unless (eq ../canDelete false)}}<div class="flex-col">
             {{> "systems/cortexprime/templates/partials/remove-button.html"
               group=../path
               itemKey=sfxIndex
@@ -30,7 +30,7 @@
               target='sfx'
               type="trash"
             }}
-          </div>
+          </div>{{/unless}}
         </div>
       </div>
       <div class="flex-col col-12">

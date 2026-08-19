@@ -9,6 +9,7 @@
   "ActorTypesNote": "Muchos cambios en la configuración del actor se pueden actualizar desde la hoja del actor, sin embargo, algunos de los valores no se actualizarán, especialmente los valores predeterminados. Esto se hace para evitar que los valores escritos por los jugadores se pierdan",
   "AddCustomDice": "Añadir dado personalizado",
   "AddCustomTrait": "Añadir rasgo personalizado",
+  "AddPlotPoint": "Añadir punto de trama",
   "AllowCustomTraits": "Permitir que los propietarios añadan rasgos personalizados",
   "Added": "añadido",
   "AddToPool": "Añadir a la reserva",

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { appendCustomTrait, canCreateCustomTrait, traitSetAllowsCustomTraits } from '../module/actor/customTraits.js'
+import { appendCustomTrait, canCreateCustomTrait, isCustomTraitSetPath, traitSetAllowsCustomTraits } from '../module/actor/customTraits.js'
 import { mergeActorTypeConfiguration } from '../module/actor/syncActorType.js'
 
 test('legacy Trait Sets continue allowing owner-created custom Traits', () => {
@@ -29,6 +29,15 @@ test('permitted creation appends exactly one custom Trait', () => {
   assert.equal(Object.keys(added).length, 2)
   assert.equal(added[0].name, 'Existing')
   assert.equal(added[1].name, 'New Trait')
+})
+
+test('only a direct Trait Set path can target custom Trait creation', () => {
+  assert.equal(isCustomTraitSetPath('system.actorType.traitSets.0'), true)
+  assert.equal(isCustomTraitSetPath('system.actorType.traitSets._stableId'), true)
+  assert.equal(isCustomTraitSetPath('system.actorType.plotPoints'), false)
+  assert.equal(isCustomTraitSetPath('system.pp'), false)
+  assert.equal(isCustomTraitSetPath('system.actorType.assets'), false)
+  assert.equal(isCustomTraitSetPath('system.actorType.traitSets.0.customTraits'), false)
 })
 
 test('Actor Type sync propagates the setting without deleting custom Traits', () => {

@@ -13,6 +13,7 @@
   "ActorTypesNote": "Many actor setting changes can be updated from the actor sheet, however many of the values will not be updated, especially default values. This is to prevent values entered by players from being lost",
   "AddCustomDice": "Add Custom Dice",
   "AddCustomTrait": "Add Custom Trait",
+  "AddPlotPoint": "Add Plot Point",
   "AllowCustomTraits": "Allow Actor Owners to Add Custom Traits",
   "Added": "added",
   "AddToPool": "Add To Pool",

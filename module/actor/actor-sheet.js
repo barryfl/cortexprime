@@ -6,7 +6,7 @@ import { getLength, objectMapValues, objectReindexFilter, objectFindValue, objec
 import { CortexPrimeHelp } from '../apps/CortexPrimeHelp.js'
 import { normalizeActorType } from './normalizeActorType.js'
 import { syncActorWithActorType } from './syncActorType.js'
-import { appendCustomTrait, canCreateCustomTrait } from './customTraits.js'
+import { appendCustomTrait, canCreateCustomTrait, isCustomTraitSetPath } from './customTraits.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
@@ -343,7 +343,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     event.preventDefault()
     const { path } = target.dataset
     await this._saveCurrentForm()
-    if (!/^system\.actorType\.traitSets\.[^.]+$/.test(path ?? '')) return
+    if (!isCustomTraitSetPath(path)) return
 
     const traitSet = foundry.utils.getProperty(this.actor, path)
     if (!canCreateCustomTrait(traitSet, {

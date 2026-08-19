@@ -24,3 +24,7 @@ export function appendCustomTrait (customTraits, trait) {
     [Object.keys(current).length]: trait
   }
 }
+
+export function isCustomTraitSetPath (path) {
+  return /^system\.actorType\.traitSets\.[^.]+$/.test(path ?? '')
+}

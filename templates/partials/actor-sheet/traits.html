@@ -32,7 +32,7 @@
           {{#unless (eq trait.valueType 'resource')}}
             <span class="trait-identity-area-cpt flex-col flex-g-1{{ternary trait.shutdown ' shutdown' ''}}">
               {{#if trait._presentationView.showIcon}}
-                <img class="trait-image-cpt trait-icon-cpt" src="{{trait._presentationView.image}}" alt="" aria-hidden="true">
+                <img class="trait-image-cpt trait-control-image-cpt trait-icon-cpt" src="{{trait._presentationView.image}}" alt="" aria-hidden="true">
               {{/if}}
               {{#if (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0]))}}
                 {{#if trait._presentationView.useImageAction}}
@@ -40,7 +40,7 @@
                     data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
                     data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
                     title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
-                    <img class="trait-image-cpt" src="{{trait._presentationView.image}}" alt="">
+                    <img class="trait-image-cpt trait-control-image-cpt" src="{{trait._presentationView.image}}" alt="">
                   </button>
                   <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-fallback-cpt hide" data-action="addToPool"
                     data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"

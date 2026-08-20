@@ -103,10 +103,11 @@ test('Actor Sheet uses the existing pool action and retains temporary/effective 
   const settings = read('templates/partials/settings/trait-presentation.html')
   const edit = read('templates/partials/actor-sheet/traits-edit.html')
 
-  assert.match(traits, /_presentationView\.showIcon[\s\S]*<img class="trait-image-cpt"/)
+  assert.match(traits, /_presentationView\.showIcon[\s\S]*<img class="trait-image-cpt [^"]*trait-control-image-cpt/)
   assert.match(traits, /_presentationView\.useImageAction[\s\S]*data-action="addToPool"/)
   assert.match(traits, /trait-image-fallback-cpt hide[\s\S]*data-action="addToPool"/)
   assert.match(traits, /trait-identity-area-cpt[\s\S]*showIcon[\s\S]*useImageAction[\s\S]*trait-image-action-cpt[\s\S]*\{\{else\}\}[\s\S]*fa fa-plus[\s\S]*trait-label-text-cpt/)
+  assert.equal((traits.match(/trait-control-image-cpt/g) ?? []).length, 2)
   assert.doesNotMatch(traits.match(/trait-die-action-row-cpt[\s\S]*?temporary-die\.html/)?.[0] ?? '', /data-action="addToPool"/)
   assert.equal((traits.match(/data-action="addToPool"/g) ?? []).length >= 2, true)
   assert.doesNotMatch(traits, /<img[^>]+src="\{\{trait\._presentationView\.image\}\}"[^>]*>\s*\{\{else/)

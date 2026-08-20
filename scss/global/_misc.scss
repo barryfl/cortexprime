@@ -73,10 +73,13 @@
 
 .trait-image-cpt {
   flex: 0 0 auto;
-  height: toRem(24px);
   object-fit: contain;
-  width: toRem(24px);
   vertical-align: middle;
+}
+
+.trait-control-image-cpt {
+  height: toRem(24px);
+  width: toRem(24px);
 }
 
 .trait-icon-cpt {
@@ -115,6 +118,12 @@
   flex: 0 0 auto;
   line-height: 0;
   padding: toRem(2px);
+}
+
+.btn.btn-small.trait-image-action-cpt {
+  height: toRem(24px);
+  padding: 0;
+  width: toRem(24px);
 }
 
 .resource-consume-cpt {

@@ -1,90 +1,155 @@
 <section class="cortexprime-help">
+  <p>
+    <button type="button" data-action="index">← Back to Help Index</button>
+  </p>
+
   <h2>Traits and Trait Sets</h2>
 
-  <h3>Trait Set Settings</h3>
+  <p>
+    Cortex Prime games can use very different Trait Sets. The names on your sheet
+    may be Attributes, Skills, Distinctions, Values, Relationships, Powers, Roles,
+    Stress, or something else entirely. The controls described here work the same
+    way regardless of what your GM calls the Trait Set.
+  </p>
+
+  <hr>
+
+  <h3>Die Traits</h3>
+
+  <p>
+    A die Trait has a permanent die rating such as d6, d8, or d10. Click the die
+    itself to change its <strong>permanent</strong> value.
+  </p>
+
+  <p>
+    The Add to Dice Pool control adds the Trait to your current Dice Pool and opens
+    the Dice Pool window. If the GM has configured an image for the Trait, that image
+    may appear beside the Trait or may replace the normal Add to Dice Pool control.
+  </p>
+
+  <h4>Temporary Step Up and Step Down</h4>
+
+  <p>
+    The small controls beneath a die change its effective value without changing the
+    permanent rating:
+  </p>
 
   <ul>
-    <li>
-      <strong>Has Description:</strong>
-      Adds a description field to traits in this set.
-    </li>
-
-    <li>
-      <strong>Has Labels:</strong>
-      Gives traits both a displayed label and an internal name.
-    </li>
-
-    <li>
-      <strong>Has Descriptors:</strong>
-      Allows traits to contain additional descriptive entries.
-    </li>
-
-    <li>
-      <strong>Has SFX:</strong>
-      Allows traits to contain SFX entries.
-    </li>
-
-    <li>
-      <strong>Has Sub-Traits:</strong>
-      Allows traits to contain nested sub-traits.
-    </li>
-
-    <li>
-      <strong>Has Dice:</strong>
-      Gives traits a die rating and enables die controls on the actor sheet.
-    </li>
-
-    <li>
-      <strong>Consumable Dice:</strong>
-      Allows dice in the Trait Set to be consumed or removed through normal play.
-    </li>
+    <li><strong>Minus:</strong> temporarily step the Trait down.</li>
+    <li><strong>Reset:</strong> remove the temporary adjustment and return to the permanent value.</li>
+    <li><strong>Plus:</strong> temporarily step the Trait up.</li>
   </ul>
 
-  <h3>Important</h3>
-
   <p>
-    Settings beneath a disabled parent option may appear greyed out.
-    For example, Consumable Dice cannot be enabled until Has Dice is enabled.
-  </p>
-
-  <h3>Preset vs Custom Traits</h3>
-
-  <p>
-    Preset Traits are defined in Actor Settings and are copied into new actors.
+    Temporary adjustments are useful for scene effects, injuries, bonuses, penalties,
+    or any other rule that changes a Trait for a limited time. Rolls and saved Dice Pool
+    Macros use the Trait's current effective value.
   </p>
 
   <p>
-    Custom Traits are created directly on an individual actor sheet during play when
-    the GM allows custom Traits for that Trait Set. GMs may create them regardless of
-    that player-facing setting.
+    The reset control near the top of the actor sheet clears <strong>all</strong>
+    temporary die adjustments on that Actor at once.
   </p>
 
-  <h3>Permanent vs Temporary Die Values</h3>
+  <hr>
+
+  <h3>Other Trait Value Types</h3>
 
   <p>
-    Changing the die itself edits the Trait's permanent value. The small minus, reset,
-    and plus controls temporarily step its effective die down, restore it to the base
-    value, or step it up without changing that permanent value.
+    The module supports several ordinary Trait value types. Which ones appear on your
+    sheet depends on GM configuration.
+  </p>
+
+  <ul>
+    <li><strong>Die:</strong> a Cortex die rating used in rolls.</li>
+    <li><strong>Number:</strong> a numeric value that can be edited directly.</li>
+    <li><strong>Text:</strong> a freeform text value.</li>
+    <li><strong>Resource:</strong> a tracked current value with increment/decrement controls.</li>
+  </ul>
+
+  <h4>Resource Traits</h4>
+
+  <p>
+    Resource Traits track a current numeric amount. The GM may configure minimum,
+    maximum, starting value, and step size. Resource images may be decorative or may
+    replace the consume/decrement control.
+  </p>
+
+  <hr>
+
+  <h3>Descriptions, Descriptors, SFX, and Sub-Traits</h3>
+
+  <p>
+    Trait Sets can enable additional information beneath each Trait. Depending on the
+    Actor Type, a Trait may have a description, descriptors, SFX, or nested Sub-Traits.
   </p>
 
   <p>
-    When any Traits are adjusted, the reset control in the sheet tabs clears all
-    temporary Trait steps on that Actor.
+    Sub-Traits can be diceless or can have dice if the GM enables dice for them. This
+    makes them useful for specialties, focused abilities, tags, or any other nested
+    Trait structure your Cortex build needs.
   </p>
 
-  <h3>Hiding and Restoring Traits</h3>
+  <hr>
+
+  <h3>Custom Traits</h3>
 
   <p>
-    An inherited Trait may be hidden on one Actor without changing the Actor Type or
-    other Actors. Restore it from the Trait Set's Hidden Traits list; its actor-local
-    value and temporary adjustment are preserved.
+    A GM can allow players to create custom Traits inside selected Trait Sets. When
+    allowed, use the Add Custom Trait control in that Trait Set.
   </p>
 
-  <h3>Resource Traits</h3>
+  <p>
+    Custom Traits belong to that Actor and can be deleted normally. GMs may create
+    custom Traits even when player creation is disabled.
+  </p>
+
+  <hr>
+
+  <h3>Hiding and Restoring Inherited Traits</h3>
 
   <p>
-    Resource Traits track a current numeric value with decrement and increment controls.
-    Depending on GM configuration, an optional image may identify the Resource or act as
-    its consume/decrement button.
+    The eye-slash control hides an inherited Trait on the current Actor. This is
+    <strong>not</strong> the same as deleting the Trait from the Actor Type.
+  </p>
+
+  <p>
+    A hidden inherited Trait:
+  </p>
+
+  <ul>
+    <li>disappears from that Actor's normal sheet;</li>
+    <li>does not change the Actor Type or other Actors;</li>
+    <li>stays hidden through Actor Type synchronization;</li>
+    <li>keeps its actor-local value and temporary step state;</li>
+    <li>can be restored later from the Trait Set's Hidden Traits list.</li>
+  </ul>
+
+  <hr>
+
+  <h3>Assets and Complications</h3>
+
+  <p>
+    Assets and Complications use their own specialized Add controls. They are
+    actor-local entries and can be removed when they are no longer relevant.
+  </p>
+
+  <p>
+    Their exact game effects are determined by your Cortex Prime rules and your GM;
+    the sheet provides tracking and dice interaction rather than enforcing one
+    universal interpretation.
+  </p>
+
+  <hr>
+
+  <h3>Notes</h3>
+
+  <p>
+    Actor Types may enable a Notes tab. Notes are actor-local entries intended for
+    information that does not need to be represented as a Trait.
+  </p>
+
+  <p>
+    <button type="button" data-action="index">← Back to Help Index</button>
   </p>
 </section>

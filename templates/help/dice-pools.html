@@ -1,62 +1,150 @@
 <section class="cortexprime-help">
+  <p>
+    <button type="button" data-action="index">← Back to Help Index</button>
+  </p>
+
   <h2>Dice Pools and Rolling</h2>
 
   <p>
-    Use Add to Dice Pool on a rollable Trait to build the pool. Deliberately adding dice
-    opens the Dice Pool automatically, and temporarily adjusted Traits contribute their
-    current effective die.
+    The Dice Pool is a temporary staging area for a roll. Add the Traits and other
+    dice that apply, make any final adjustments, then roll.
+  </p>
+
+  <hr>
+
+  <h3>Building a Dice Pool</h3>
+
+  <p>
+    Use Add to Dice Pool on a rollable Trait. Deliberately adding dice opens the Dice
+    Pool automatically.
   </p>
 
   <p>
-    The pool is a temporary staging tray: closing it or completing a successful roll
-    clears it.
+    Trait-backed dice remain linked to their source. If a Trait has a temporary step
+    adjustment, its current effective die is what enters the pool.
   </p>
+
+  <p>
+    You may also add supported literal/custom dice where appropriate. A pool can contain
+    dice from more than one Actor.
+  </p>
+
+  <h4>Removing Dice</h4>
+
+  <ul>
+    <li><strong>Remove Source:</strong> removes one source/group from the current pool.</li>
+    <li><strong>Clear Pool:</strong> empties the entire current pool.</li>
+  </ul>
+
+  <hr>
+
+  <h3>The Pool Is Temporary</h3>
+
+  <p>
+    The Dice Pool is intentionally ephemeral. A successful roll clears and closes it.
+    Closing the Dice Pool without rolling also clears it.
+  </p>
+
+  <p>
+    If you deliberately add a Trait or send dice to the pool later, a fresh pool is
+    created and opened.
+  </p>
+
+  <hr>
 
   <h3>Rolling</h3>
 
   <p>
-    Roll the assembled pool using the Dice Pool controls.
+    Use the Dice Pool's roll controls to roll the assembled dice. The result picker lets
+    you choose the dice used for the result according to the rules of your game.
   </p>
 
-  <h3>Total</h3>
+  <h4>Total</h4>
 
   <p>
-    Select the dice used to form your Total according to the rules of your game.
+    Select the dice that form the Total according to your Cortex Prime rules.
   </p>
 
-  <h3>Effect Die</h3>
+  <h4>Effect Die</h4>
 
   <p>
-    Select one unused die as the Effect Die.
+    Select the appropriate unused die as the Effect Die when your game uses one.
   </p>
 
-  <h3>Hitches</h3>
+  <h4>Hitches</h4>
 
   <p>
-    Dice that roll 1 are treated as hitches and are identified by the roll interface.
+    Dice that roll 1 are identified as hitches by the roll interface.
   </p>
 
-  <h3>Re-Roll</h3>
+  <h4>Re-Roll</h4>
 
   <p>
-    The Re-Roll controls allow an existing pool to be rolled again when permitted.
+    Chat-result controls can re-roll an existing result when permitted by your game.
   </p>
 
-  <h3>To Pool</h3>
+  <h4>To Pool</h4>
 
   <p>
-    Roll results or selected dice can be returned to the active pool where appropriate.
+    Supported chat results or selected dice can be sent back to the Dice Pool. Sending
+    dice to the pool opens it automatically.
   </p>
+
+  <hr>
 
   <h3>Export to Macro</h3>
 
   <p>
-    Build a pool, then choose Export to Macro to save a reusable launcher. Actor Traits
-    remain linked where possible, so using the macro reconstructs and opens the pool with
-    their current effective values instead of rolling immediately.
+    If you build the same pool frequently, choose <strong>Export to Macro</strong>.
+    Give the Macro a name and the system creates a reusable Foundry Macro.
   </p>
 
   <p>
-    Exported macros are placed in a Cortex Prime Dice Pools folder named for the user.
+    When possible, the saved recipe stores references to the actual Actor Traits rather
+    than freezing their current die sizes. Clicking the Macro later resolves those Traits
+    again, rebuilds the pool using their current effective values, and opens the Dice Pool
+    for any situational additions. The Macro does not roll automatically.
+  </p>
+
+  <p>
+    Literal/custom dice that do not have a Trait source are saved as literal dice.
+  </p>
+
+  <p>
+    Exported Macros are organized into a folder named:
+    <strong>Cortex Prime Dice Pools - &lt;User Name&gt;</strong>.
+    The friendly folder name is for organization; the system tracks the owning user
+    internally so folder reuse remains reliable.
+  </p>
+
+  <p>
+    If a referenced Trait is later hidden, deleted, or otherwise unavailable, the
+    Macro skips unavailable sources and warns you rather than silently using a stale die.
+    Restoring a hidden Trait allows the Macro to resolve it again.
+  </p>
+
+  <hr>
+
+  <h3>GM: Saved Dice Pool Cleanup</h3>
+
+  <p>
+    Exported Macro recipes are stored separately from the transient Dice Pool. If a
+    Macro is deleted, its saved recipe may remain behind.
+  </p>
+
+  <p>
+    GMs can use <strong>Saved Dice Pool Cleanup</strong> from the Cortex Prime system
+    settings. The cleanup tool scans users' saved recipes and world Macros, identifies
+    recipes that are no longer referenced, and lets the GM delete only those unused
+    recipes.
+  </p>
+
+  <p>
+    Macro names and folders are not used as the authoritative match, so renaming or
+    moving an exported Macro does not make its recipe appear unused.
+  </p>
+
+  <p>
+    <button type="button" data-action="index">← Back to Help Index</button>
   </p>
 </section>

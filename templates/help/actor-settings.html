@@ -1,42 +1,317 @@
 <section class="cortexprime-help">
-  <h2>Actor Configuration</h2>
+  <p>
+    <button type="button" data-action="index">← Back to Help Index</button>
+  </p>
 
-  <p>Actor Settings defines the structure used when new Cortex Prime actors are created.</p>
+  <h2>Actor Configuration — GM Guide</h2>
+
+  <p>
+    Actor Settings defines the reusable Actor Types used by the Cortex Prime system.
+    An Actor Type controls sheet structure, enabled sections, Trait Sets, preset Traits,
+    and many presentation and behavior options.
+  </p>
+
+  <p>
+    Changes to an Actor Type can be synchronized to existing Actors without resetting
+    their normal actor-local play state.
+  </p>
+
+  <hr>
 
   <h3>Actor Types</h3>
+
   <p>
-    Actor Types define which sections appear on an actor sheet and which Trait Sets,
-    Simple Traits, and other features are available.
+    Create separate Actor Types when different kinds of Actors need different sheet
+    structures. For example, a player character, NPC, vehicle, or Doom Pool could each
+    use its own Actor Type.
   </p>
 
-  <h3>General Actor Settings</h3>
+  <p>
+    Actor Types can be created, edited, reordered, and deleted from Actor Settings.
+    Deleting an Actor Type removes the configuration definition; it does not automatically
+    delete existing Actors that used it.
+  </p>
+
+  <hr>
+
+  <h3>Tabs</h3>
+
+  <p>
+    Actor Types can define their own ordered sheet tabs. Trait Sets and other sheet
+    sections can be assigned to those tabs.
+  </p>
+
   <ul>
-    <li><strong>Show Profile Image:</strong> Displays the actor portrait on the sheet.</li>
-    <li><strong>Has Notes Page:</strong> Adds the Notes tab.</li>
-    <li><strong>Has Plot Points:</strong> Enables Plot Point tracking.</li>
-    <li><strong>Has Assets:</strong> Enables Assets.</li>
-    <li><strong>Has Complications:</strong> Enables Complications.</li>
-    <li><strong>Has Hidable Traits:</strong> Allows traits to be hidden from other users.</li>
+    <li>Tabs use stable internal IDs, so renaming or reordering a tab does not break assignments.</li>
+    <li>The final remaining tab cannot be deleted.</li>
+    <li>If a tab is deleted, affected sections are reassigned using the system's normal fallback behavior.</li>
+    <li>The Notes tab remains a special optional tab controlled by the Actor Type's Notes setting.</li>
   </ul>
 
+  <hr>
+
+  <h3>Sheet Sections and Layout</h3>
+
+  <p>
+    The major sheet sections are peers that can be placed into configured tabs. These
+    include Profile/Identity, Plot Points, Trait Sets, Assets, and Complications.
+  </p>
+
+  <p>
+    Sections can be configured with:
+  </p>
+
+  <ul>
+    <li><strong>Enabled:</strong> whether the section is shown.</li>
+    <li><strong>Tab:</strong> which configured tab contains the section.</li>
+    <li><strong>Order:</strong> where the section appears relative to other sections.</li>
+    <li><strong>Width:</strong> the section's layout width, such as full, half, or third where supported.</li>
+  </ul>
+
+  <p>
+    Feature toggles such as Plot Points, Assets, or Complications remain authoritative:
+    disabling the feature prevents stale layout configuration from forcing the section
+    to appear.
+  </p>
+
+  <hr>
+
+  <h3>General Actor Features</h3>
+
+  <ul>
+    <li><strong>Show Profile Image:</strong> displays the actor portrait where the Profile section is enabled.</li>
+    <li><strong>Has Notes Page:</strong> enables the Notes tab.</li>
+    <li><strong>Has Plot Points:</strong> enables dedicated Plot Point tracking.</li>
+    <li><strong>Has Assets:</strong> enables the specialized Assets section and Add Asset control.</li>
+    <li><strong>Has Complications:</strong> enables the specialized Complications section and Add Complication control.</li>
+    <li><strong>Has Hidable Traits:</strong> enables actor-local hiding/suppression of inherited Traits.</li>
+  </ul>
+
+  <hr>
+
   <h3>Trait Sets</h3>
+
   <p>
-    Trait Sets are major categories such as Distinctions, Attributes, Skills,
-    Relationships, or Values.
+    Trait Sets are the major Trait categories used by your Cortex build: Distinctions,
+    Attributes, Skills, Values, Relationships, Roles, Powers, Stress, or any other
+    category you need.
   </p>
 
   <p>
-    Use the plus button under Trait Sets to create a new category, then configure the
-    Trait Set before adding preset traits.
+    Trait Sets can be created, renamed, reordered, moved between tabs, assigned section
+    width/order, and deleted.
   </p>
 
-  <h3>Preset Traits</h3>
+  <h4>Trait Set Capabilities</h4>
+
   <p>
-    Preset Traits are traits automatically included in the Trait Set when a new actor
-    is created.
+    Depending on configuration, Traits in a set can support:
+  </p>
+
+  <ul>
+    <li>descriptions;</li>
+    <li>display labels;</li>
+    <li>descriptors;</li>
+    <li>SFX;</li>
+    <li>Sub-Traits;</li>
+    <li>dice;</li>
+    <li>consumable dice;</li>
+    <li>custom Traits created on individual Actors.</li>
+  </ul>
+
+  <p>
+    Settings that depend on another capability may be disabled until their parent
+    option is enabled. For example, consumable dice require dice support.
+  </p>
+
+  <h4>Custom Trait Permission</h4>
+
+  <p>
+    The GM can allow players to create custom Traits in selected Trait Sets. GMs can
+    create custom Traits even when player creation is disabled.
+  </p>
+
+  <hr>
+
+  <h3>Preset Traits and Typed Values</h3>
+
+  <p>
+    Preset Traits are defined on the Actor Type and supplied to Actors using that
+    template. Ordinary Traits support these value types:
+  </p>
+
+  <ul>
+    <li><strong>Die:</strong> Cortex die value with permanent and temporary-step controls.</li>
+    <li><strong>Number:</strong> editable numeric value.</li>
+    <li><strong>Text:</strong> editable text value.</li>
+    <li><strong>Resource:</strong> numeric counter with minimum, maximum, default, step size, and optional image presentation.</li>
+  </ul>
+
+  <p>
+    Sub-Traits can remain diceless or use dice when the Trait Set enables them. This
+    can represent specialties or other nested Trait structures without requiring a
+    separate subsystem.
+  </p>
+
+  <hr>
+
+  <h3>Die Trait Images</h3>
+
+  <p>
+    Die Traits can optionally use an image for presentation. The available modes are
+    designed to leave existing sheets unchanged unless the GM opts in.
+  </p>
+
+  <ul>
+    <li><strong>None:</strong> no image; the normal Add to Dice Pool control is shown.</li>
+    <li><strong>Icon:</strong> show the image before the normal Add to Dice Pool control and Trait label.</li>
+    <li><strong>Replace Add to Pool:</strong> use the image itself as the Add to Dice Pool control.</li>
+  </ul>
+
+  <p>
+    If a replacement image is missing or invalid, the normal Add to Dice Pool control
+    is used as a safe fallback.
+  </p>
+
+  <hr>
+
+  <h3>Resource Trait Configuration</h3>
+
+  <p>
+    Resource Traits track a current value separately from their Actor Type configuration.
+    Configure minimum, maximum, starting/default value, and step size as appropriate.
   </p>
 
   <p>
-    Examples include Strength, Dexterity, Intelligence, or predefined Distinctions.
+    Resource image presentation supports the established Resource modes:
+  </p>
+
+  <ul>
+    <li><strong>None:</strong> normal counter controls only.</li>
+    <li><strong>Icon:</strong> show a noninteractive image beside the Resource.</li>
+    <li><strong>Consume:</strong> use the image in place of the decrement/consume control.</li>
+  </ul>
+
+  <p>
+    Actor Type synchronization preserves the Actor's current Resource amount while
+    updating configuration.
+  </p>
+
+  <hr>
+
+  <h3>Synchronizing Existing Actors</h3>
+
+  <p>
+    Actor Type synchronization is intentionally non-destructive. It pushes current
+    template structure and configuration while preserving actor-local play state wherever
+    possible.
+  </p>
+
+  <p>
+    Synchronization can update:
+  </p>
+
+  <ul>
+    <li>tabs and section layout;</li>
+    <li>Trait Set definitions and configuration;</li>
+    <li>preset Trait definitions and labels;</li>
+    <li>value types and presentation metadata;</li>
+    <li>descriptors, SFX, Sub-Traits, and other inherited configuration.</li>
+  </ul>
+
+  <p>
+    Synchronization preserves actor-local mutable state such as current Trait values,
+    Resource amounts, custom Traits, temporary die steps, hidden inherited Traits,
+    Assets, Complications, Plot Points, and similar play-state data.
+  </p>
+
+  <hr>
+
+  <h3>Deleting and Hiding Content</h3>
+
+  <p>
+    Template/configuration deletion and actor-local deletion are different operations.
+  </p>
+
+  <ul>
+    <li>Deleting Actor Type configuration changes the template.</li>
+    <li>Deleting actor-local content such as a custom Trait, Asset, Complication, or Note removes that local entry.</li>
+    <li>Inherited Traits on one Actor are hidden/suppressed rather than destructively deleted, so synchronization does not recreate an unwanted Trait immediately.</li>
+  </ul>
+
+  <p>
+    Hidden inherited Traits can be restored later and retain their actor-local state.
+  </p>
+
+  <hr>
+
+  <h3>Theme Settings</h3>
+
+  <p>
+    Theme Settings controls the module's supported visual theme options, including
+    configured fonts, backgrounds, borders, dice presentation, and other available
+    theme properties.
+  </p>
+
+  <p>
+    Theme changes are separate from Actor Type mechanics. Use Theme Settings for
+    appearance and Actor Settings for sheet structure and Trait behavior.
+  </p>
+
+  <hr>
+
+  <h3>Import / Export Settings</h3>
+
+  <p>
+    Import / Export Settings can save or load the system's supported configuration
+    data. Existing compatibility behavior is preserved for older Actor Type data where
+    possible.
+  </p>
+
+  <p>
+    Import does not require opening every Actor to force a migration; the system uses
+    runtime normalization for supported legacy structures.
+  </p>
+
+  <hr>
+
+  <h3>Saved Dice Pool Cleanup</h3>
+
+  <p>
+    Export to Macro stores reusable Dice Pool recipes. Because deleting a Foundry Macro
+    does not necessarily delete its saved recipe, the system includes a GM-only cleanup
+    utility.
+  </p>
+
+  <p>
+    Open <strong>Saved Dice Pool Cleanup</strong> from the Cortex Prime system settings.
+    It scans saved recipes across users and compares them with the world's Cortex Prime
+    Dice Pool Macros.
+  </p>
+
+  <p>
+    Referenced recipes are protected. Unreferenced recipes are shown as unused and may
+    be selected for deletion. Macro identity is tracked by stable Cortex metadata rather
+    than by visible Macro name or folder, so moving or renaming a Macro does not falsely
+    orphan its recipe.
+  </p>
+
+  <hr>
+
+  <h3>GM Workflow Recommendation</h3>
+
+  <ol>
+    <li>Create or select an Actor Type.</li>
+    <li>Configure its tabs and enabled sheet sections.</li>
+    <li>Create Trait Sets and assign each one to a tab/layout position.</li>
+    <li>Enable the Trait Set capabilities you need.</li>
+    <li>Add preset Traits and select their value types.</li>
+    <li>Configure optional images, Resources, Sub-Traits, SFX, descriptors, or custom-Trait permissions.</li>
+    <li>Create a test Actor and verify the sheet before synchronizing existing Actors.</li>
+    <li>Use Help and tooltips as a player-facing reference rather than trying to encode your game's Cortex rules into the module itself.</li>
+  </ol>
+
+  <p>
+    <button type="button" data-action="index">← Back to Help Index</button>
   </p>
 </section>

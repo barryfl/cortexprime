@@ -83,15 +83,14 @@
   margin-right: toRem(4px);
 }
 
-.trait-label-area-cpt,
-.trait-label-content-cpt,
+.trait-identity-area-cpt,
 .trait-die-action-row-cpt {
   align-items: center;
   display: flex;
   min-width: 0;
 }
 
-.trait-label-content-cpt {
+.trait-identity-area-cpt {
   max-width: 100%;
   white-space: nowrap;
 }

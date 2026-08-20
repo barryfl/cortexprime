@@ -29,18 +29,40 @@
               <i class="fa fa-eye-slash"></i>
             </span>
           {{/if}}
-          {{#unless (eq trait.valueType 'resource')}}<span
-            class="trait-label-area-cpt flex-col flex-g-1{{ternary trait.shutdown ' shutdown' ''}}">
-            <span class="trait-label-content-cpt">
+          {{#unless (eq trait.valueType 'resource')}}
+            <span class="trait-identity-area-cpt flex-col flex-g-1{{ternary trait.shutdown ' shutdown' ''}}">
               {{#if trait._presentationView.showIcon}}
                 <img class="trait-image-cpt trait-icon-cpt" src="{{trait._presentationView.image}}" alt="" aria-hidden="true">
+              {{/if}}
+              {{#if (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0]))}}
+                {{#if trait._presentationView.useImageAction}}
+                  <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-action-cpt" data-action="addToPool"
+                    data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
+                    data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
+                    title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
+                    <img class="trait-image-cpt" src="{{trait._presentationView.image}}" alt="">
+                  </button>
+                  <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-fallback-cpt hide" data-action="addToPool"
+                    data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
+                    data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
+                    title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                {{else}}
+                  <button class="btn btn-icon btn-icon-plain-cpt btn-small" data-action="addToPool"
+                    data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
+                    data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
+                    title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                {{/if}}
               {{/if}}
               <span class="trait-label-text-cpt">{{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}</span>
               {{#if (and trait._source.compatibility (and (eq trait.valueType 'die') (not trait.name)))}}
                 <span class="fa fa-dice"></span>
               {{/if}}
             </span>
-          </span>{{/unless}}
+          {{/unless}}
           {{#if (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice))}}
             <div class="trait-die-area-cpt pl-0 flex-col flex-s-1">
               <div class="trait-die-action-row-cpt flex flex-ac">
@@ -62,29 +84,6 @@
                     label=(ternary (and ../settings.hasLabel trait.label) trait.label trait.name)
                     selectName=(concat trait._source.formPath '.dice')
                   }}
-                {{/if}}
-                {{#if (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])}}
-                  {{#if trait._presentationView.useImageAction}}
-                    <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-action-cpt" data-action="addToPool"
-                      data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
-                      data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
-                      title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
-                      <img class="trait-image-cpt" src="{{trait._presentationView.image}}" alt="">
-                    </button>
-                    <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-fallback-cpt hide" data-action="addToPool"
-                      data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
-                      data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
-                      title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
-                      <i class="fa fa-plus"></i>
-                    </button>
-                  {{else}}
-                    <button class="btn btn-icon btn-icon-plain-cpt btn-small" data-action="addToPool"
-                      data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
-                      data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
-                      title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
-                      <i class="fa fa-plus"></i>
-                    </button>
-                  {{/if}}
                 {{/if}}
               </div>
               {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-die.html"

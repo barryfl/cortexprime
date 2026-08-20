@@ -1052,6 +1052,13 @@
 .cortexprime .cortexprime-help ul + h4 {
   margin-top: 0.9rem;
 }
+.cortexprime .cortexprime-help > p:first-child {
+  margin-bottom: 0.4rem;
+}
+.cortexprime .cortexprime-help > h2:first-of-type {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+}
 .cortexprime .actor-selection {
   height: 100%;
 }

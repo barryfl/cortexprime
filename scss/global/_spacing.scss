@@ -54,3 +54,12 @@ $options: (
 .cortexprime-help ul + h4 {
   margin-top: 0.9rem;
 }
+
+.cortexprime-help > p:first-child {
+  margin-bottom: 0.4rem;
+}
+
+.cortexprime-help > h2:first-of-type {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+}

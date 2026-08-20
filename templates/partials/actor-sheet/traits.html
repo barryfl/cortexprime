@@ -30,23 +30,21 @@
             </span>
           {{/if}}
           {{#unless (eq trait.valueType 'resource')}}<span
-            class="flex-col flex-g-1{{ternary (and (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])) (not trait._presentationView.useImageAction)) ' add-to-pool' ''}}{{ternary trait.shutdown ' shutdown' ''}}"
-            {{#if (and (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])) (not trait._presentationView.useImageAction))}}
-              data-action="addToPool" title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}"
-            {{/if}}
-            data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
-            data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}>
-            {{#if trait._presentationView.showIcon}}
-              <img class="trait-image-cpt trait-icon-cpt" src="{{trait._presentationView.image}}" alt="" aria-hidden="true">
-            {{/if}}
-            {{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}
-            {{#if (and trait._source.compatibility (and (eq trait.valueType 'die') (not trait.name)))}}
-              <span class="fa fa-dice"></span>
-            {{/if}}
+            class="trait-label-area-cpt flex-col flex-g-1{{ternary trait.shutdown ' shutdown' ''}}">
+            <span class="trait-label-content-cpt">
+              {{#if trait._presentationView.showIcon}}
+                <img class="trait-image-cpt trait-icon-cpt" src="{{trait._presentationView.image}}" alt="" aria-hidden="true">
+              {{/if}}
+              <span class="trait-label-text-cpt">{{ternary (and ../settings.hasLabel trait.label) trait.label trait.name}}</span>
+              {{#if (and trait._source.compatibility (and (eq trait.valueType 'die') (not trait.name)))}}
+                <span class="fa fa-dice"></span>
+              {{/if}}
+            </span>
           </span>{{/unless}}
           {{#if (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice))}}
-            {{#if (or (not ../owner) (or ../traitSetShutdown trait.shutdown))}}
-              <div class="pl-0 flex-col flex-s-1">
+            <div class="trait-die-area-cpt pl-0 flex-col flex-s-1">
+              <div class="trait-die-action-row-cpt flex flex-ac">
+                {{#if (or (not ../owner) (or ../traitSetShutdown trait.shutdown))}}
                 <div class="flex flex-wrap flex-ac">
                   {{#each trait._temporaryDieView.effectiveDice as |die|}}
                     {{> (concat "systems/cortexprime/templates/partials/dice/d" die ".html")
@@ -55,45 +53,46 @@
                     }}
                   {{/each}}
                 </div>
+                {{else}}
+                  {{> "systems/cortexprime/templates/partials/dice/select.html"
+                    addToPool=true
+                    consumable=trait.valueSettings.consumableDice
+                    dice=trait.dice.value
+                    minDice=0
+                    label=(ternary (and ../settings.hasLabel trait.label) trait.label trait.name)
+                    selectName=(concat trait._source.formPath '.dice')
+                  }}
+                {{/if}}
+                {{#if (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])}}
+                  {{#if trait._presentationView.useImageAction}}
+                    <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-action-cpt" data-action="addToPool"
+                      data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
+                      data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
+                      title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
+                      <img class="trait-image-cpt" src="{{trait._presentationView.image}}" alt="">
+                    </button>
+                    <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-fallback-cpt hide" data-action="addToPool"
+                      data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
+                      data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
+                      title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
+                      <i class="fa fa-plus"></i>
+                    </button>
+                  {{else}}
+                    <button class="btn btn-icon btn-icon-plain-cpt btn-small" data-action="addToPool"
+                      data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
+                      data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
+                      title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
+                      <i class="fa fa-plus"></i>
+                    </button>
+                  {{/if}}
+                {{/if}}
               </div>
-            {{else}}
-              <div class="pl-0 flex-col flex-s-1">
-                {{> "systems/cortexprime/templates/partials/dice/select.html"
-                  addToPool=true
-                  consumable=trait.valueSettings.consumableDice
-                  dice=trait.dice.value
-                  minDice=0
-                  label=(ternary (and ../settings.hasLabel trait.label) trait.label trait.name)
-                  selectName=(concat trait._source.formPath '.dice')
-                }}
-                {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-die.html"
-                  editable=../editable
-                  traitPath=trait._source.formPath
-                  view=trait._temporaryDieView
-                }}
-              </div>
-            {{/if}}
-            {{#if (or (not ../owner) (or ../traitSetShutdown trait.shutdown))}}
               {{> "systems/cortexprime/templates/partials/actor-sheet/temporary-die.html"
-                editable=false
+                editable=(and ../editable (and (not ../traitSetShutdown) (not trait.shutdown)))
                 traitPath=trait._source.formPath
                 view=trait._temporaryDieView
               }}
-            {{/if}}
-          {{/if}}
-          {{#if (and trait._presentationView.useImageAction (and (and (eq trait.valueType 'die') (or trait._source.valueTypeExplicit ../settings.hasDice)) (and (and (not ../traitSetShutdown) (not trait.shutdown)) trait.dice.value.[0])))}}
-            <button class="btn trait-image-action-cpt" data-action="addToPool"
-              data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
-              data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
-              title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
-              <img class="trait-image-cpt" src="{{trait._presentationView.image}}" alt="">
-            </button>
-            <button class="btn btn-icon btn-icon-plain-cpt btn-small trait-image-fallback-cpt hide" data-action="addToPool"
-              data-label="{{ternary (and ../settings.hasLabel trait.label) (ternary (and trait.label trait.name) (concat trait.label ' (' trait.name ')')) trait.name}}"
-              data-path="{{concat trait._source.formPath '.dice'}}" {{{ternary trait.valueSettings.consumableDice 'data-consumable="true"' '' }}}
-              title="{{localize 'AddToDicePool'}}" aria-label="{{localize 'AddToDicePool'}}" type="button">
-              <i class="fa fa-plus"></i>
-            </button>
+            </div>
           {{/if}}
         </div>
         {{#if (eq trait.valueType 'text')}}

@@ -83,6 +83,35 @@
   margin-right: toRem(4px);
 }
 
+.trait-label-area-cpt,
+.trait-label-content-cpt,
+.trait-die-action-row-cpt {
+  align-items: center;
+  display: flex;
+  min-width: 0;
+}
+
+.trait-label-content-cpt {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.trait-label-text-cpt {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trait-die-area-cpt {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+}
+
+.trait-die-action-row-cpt {
+  justify-content: flex-end;
+}
+
 .trait-image-action-cpt {
   flex: 0 0 auto;
   line-height: 0;

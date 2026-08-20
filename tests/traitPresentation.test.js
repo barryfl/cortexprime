@@ -106,7 +106,7 @@ test('Actor Sheet uses the existing pool action and retains temporary/effective 
   assert.match(traits, /_presentationView\.showIcon[\s\S]*<img class="trait-image-cpt"/)
   assert.match(traits, /_presentationView\.useImageAction[\s\S]*data-action="addToPool"/)
   assert.match(traits, /trait-image-fallback-cpt hide[\s\S]*data-action="addToPool"/)
-  assert.match(traits, /not trait\._presentationView\.useImageAction[\s\S]*add-to-pool/)
+  assert.match(traits, /trait-die-action-row-cpt[\s\S]*useImageAction[\s\S]*trait-image-action-cpt[\s\S]*\{\{else\}\}[\s\S]*fa fa-plus/)
   assert.equal((traits.match(/data-action="addToPool"/g) ?? []).length >= 2, true)
   assert.doesNotMatch(traits, /<img[^>]+src="\{\{trait\._presentationView\.image\}\}"[^>]*>\s*\{\{else/)
   assert.match(traits, /temporary-die\.html/)

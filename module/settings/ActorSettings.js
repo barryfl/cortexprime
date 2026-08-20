@@ -7,6 +7,7 @@ import { getLength, objectFindKey, objectFindValue, objectMapValues, objectReduc
 import { removeItem, reorderItem } from '../scripts/settingsHelpers.js'
 import { actorsMatchingActorType, syncActorsWithActorType } from '../actor/syncActorType.js'
 import { pruneImplicitResourceSettings } from '../actor/resourceTraits.js'
+import { pruneImplicitTraitPresentation } from '../actor/traitPresentation.js'
 
 const actorSheetSections = Object.fromEntries(PREDEFINED_ACTOR_SHEET_SECTIONS.map(({ id, label }) => [id, label]))
 const sheetSectionWidths = ['full', 'half', 'third']
@@ -19,7 +20,8 @@ export default class ActorSettings extends CortexPrimeApplication {
     tag: 'form',
     classes: ['cortexprime', 'cortexprime-application', 'actor-settings'],
     actions: {
-      resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) }
+      resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) },
+      traitImagePicker: function (event, target) { return this._traitImagePicker(event, target) }
     },
     form: {
       closeOnSubmit: false,
@@ -120,6 +122,7 @@ export default class ActorSettings extends CortexPrimeApplication {
       submittedData.actorTypes ?? foundry.utils.expandObject(submittedData).actorTypes ?? {}
     )
     pruneImplicitResourceSettings(actorTypes, game.settings.get('cortexprime', 'actorTypes') ?? {})
+    pruneImplicitTraitPresentation(actorTypes, game.settings.get('cortexprime', 'actorTypes') ?? {})
 
     this._savePromise = this._savePromise.then(async () => {
       const currentActorTypes = game.settings.get('cortexprime', 'actorTypes') ?? {}
@@ -178,7 +181,7 @@ export default class ActorSettings extends CortexPrimeApplication {
           return this._committedNameChange(event)
         }
 
-        if (event.target.classList.contains('input-checkbox-cpt') || event.target.classList.contains('value-type-select')) {
+        if (event.target.classList.contains('input-checkbox-cpt') || event.target.classList.contains('value-type-select') || event.target.classList.contains('trait-image-display-select')) {
           await this._saveCurrentForm()
           await this._renderPreservingScroll()
         }
@@ -560,6 +563,28 @@ export default class ActorSettings extends CortexPrimeApplication {
     await this._saveCurrentForm()
     this._discardPreservedScroll()
     if (!/^[^.]+\.traitSets\.[^.]+\.traits\.[^.]+\.valueSettings\.image$/.test(path ?? '')) return
+
+    const source = game.settings.get('cortexprime', 'actorTypes')
+    const picker = new foundry.applications.apps.FilePicker({
+      type: 'image',
+      current: foundry.utils.getProperty(source, path) ?? '',
+      callback: async image => {
+        this._preserveScroll()
+        const latest = game.settings.get('cortexprime', 'actorTypes')
+        foundry.utils.setProperty(latest, path, image)
+        await game.settings.set('cortexprime', 'actorTypes', latest)
+        await this._renderPreservingScroll()
+      }
+    })
+    await picker.render(true)
+  }
+
+  async _traitImagePicker (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { path } = target.dataset
+    await this._saveCurrentForm()
+    this._discardPreservedScroll()
+    if (!/^[^.]+\.traitSets\.[^.]+\.traits\.[^.]+\.presentation\.image$/.test(path ?? '')) return
 
     const source = game.settings.get('cortexprime', 'actorTypes')
     const picker = new foundry.applications.apps.FilePicker({

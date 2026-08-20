@@ -1101,6 +1101,26 @@
   object-fit: contain;
   width: 2rem;
 }
+.cortexprime .trait-image-cpt {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  height: 1.5rem;
+  -o-object-fit: contain;
+  object-fit: contain;
+  width: 1.5rem;
+  vertical-align: middle;
+}
+.cortexprime .trait-icon-cpt {
+  margin-right: 0.25rem;
+}
+.cortexprime .trait-image-action-cpt {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  line-height: 0;
+  padding: 0.125rem;
+}
 .cortexprime .resource-consume-cpt {
   line-height: 0;
   padding: 0;

@@ -1,0 +1,24 @@
+<div class="relative-section pa-2">
+  <div class="section-background"></div>
+  <div class="flex flex-wrap">
+    <label class="flex-col col-6">
+      <span class="input-label-cpt">{{localize 'ImagePresentation'}}</span>
+      <select class="input-cpt trait-image-display-select" name="{{concat settingsFieldPath '.imageDisplay'}}">
+        <option value="none" {{#if (or (not presentation.imageDisplay) (eq presentation.imageDisplay 'none'))}}selected{{/if}}>{{localize 'None'}}</option>
+        <option value="icon" {{#if (eq presentation.imageDisplay 'icon')}}selected{{/if}}>{{localize 'Icon'}}</option>
+        {{#if allowAddToPool}}<option value="addToPool" {{#if (eq presentation.imageDisplay 'addToPool')}}selected{{/if}}>{{localize 'ReplaceAddToPool'}}</option>{{/if}}
+      </select>
+    </label>
+    <div class="flex-col col-6">
+      <span class="input-label-cpt">{{localize 'Image'}}</span>
+      <div class="flex flex-ac">
+        <input class="input-cpt flex-g-1" name="{{concat settingsFieldPath '.image'}}" type="text" value="{{presentation.image}}">
+        <button class="btn btn-icon btn-primary-cpt trait-image-picker" data-action="traitImagePicker"
+          data-path="{{or imagePath (concat settingsFieldPath '.image')}}" title="{{localize 'SelectImage'}}"
+          aria-label="{{localize 'SelectImage'}}" type="button">
+          <i class="fa fa-image"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

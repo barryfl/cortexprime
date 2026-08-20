@@ -19,6 +19,15 @@
     }}
   </div>
 </div>
+{{#if enablePresentation}}
+  <div class="separator-cpt"></div>
+  {{> "systems/cortexprime/templates/partials/settings/trait-presentation.html"
+    allowAddToPool=true
+    imagePath=presentationImagePath
+    presentation=presentation
+    settingsFieldPath=presentationFieldPath
+  }}
+{{/if}}
 {{#if consumableOption}}
   <div class="separator-cpt"></div>
   <div class="pa-2 relative-section">

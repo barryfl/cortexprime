@@ -1,3 +1,5 @@
+import { getTraitPresentation } from './traitPresentation.js'
+
 export const RESOURCE_IMAGE_DISPLAYS = new Set(['none', 'icon', 'consume'])
 
 const optionalNumber = value => {
@@ -48,16 +50,15 @@ export function changeResourceValue (trait, direction) {
 export function prepareResourceView (trait) {
   const settings = normalizeResourceSettings(trait?.valueSettings)
   const value = currentResourceValue(trait)
-  const hasImage = Boolean(settings.image)
-  const imageDisplay = settings.imageDisplay === 'consume' && !hasImage ? 'none' : settings.imageDisplay
+  const presentation = getTraitPresentation({ ...trait, valueSettings: settings })
 
   return {
     canDecrement: value > settings.min,
     canIncrement: settings.max === null || value < settings.max,
-    hasImage,
+    hasImage: presentation.hasImage,
     hasMax: settings.max !== null,
-    image: settings.image,
-    imageDisplay,
+    image: presentation.image,
+    imageDisplay: presentation.imageDisplay,
     max: settings.max,
     min: settings.min,
     step: settings.step,

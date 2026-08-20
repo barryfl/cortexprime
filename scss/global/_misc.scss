@@ -71,6 +71,24 @@
   width: 2rem;
 }
 
+.trait-image-cpt {
+  flex: 0 0 auto;
+  height: toRem(24px);
+  object-fit: contain;
+  width: toRem(24px);
+  vertical-align: middle;
+}
+
+.trait-icon-cpt {
+  margin-right: toRem(4px);
+}
+
+.trait-image-action-cpt {
+  flex: 0 0 auto;
+  line-height: 0;
+  padding: toRem(2px);
+}
+
 .resource-consume-cpt {
   line-height: 0;
   padding: 0;

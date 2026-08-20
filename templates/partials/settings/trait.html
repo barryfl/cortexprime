@@ -48,8 +48,12 @@
       {{> "systems/cortexprime/templates/partials/settings/value-types/dice.html"
         consumableOption=trait._source.compatibility
         data=trait
+        enablePresentation=(not trait._source.compatibility)
         fieldPath=fieldPath
         path=path
+        presentation=trait.presentation
+        presentationFieldPath=(concat fieldPath '.presentation')
+        presentationImagePath=(concat path '.presentation.image')
         settings=trait.valueSettings
         settingsFieldPath=(concat fieldPath (ternary trait._source.compatibility '.settings' '.valueSettings'))
       }}

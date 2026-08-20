@@ -104,6 +104,14 @@
                 </div>
               </div>
             </div>
+            {{#if (and ../custom (eq trait.valueType 'die'))}}
+              {{> "systems/cortexprime/templates/partials/settings/trait-presentation.html"
+                allowAddToPool=true
+                imagePath=(concat trait._source.formPath '.presentation.image')
+                presentation=trait.presentation
+                settingsFieldPath=(concat trait._source.formPath '.presentation')
+              }}
+            {{/if}}
             {{#if (eq trait.valueType 'text')}}
               {{> "systems/cortexprime/templates/partials/value-types/text.html"
                 data=trait edit=true fieldPath=(concat trait._source.formPath '.text')

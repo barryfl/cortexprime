@@ -13,6 +13,7 @@ import { ScrollPreservation } from '../applications/scrollPreservation.js'
 import { createActorTraitProvenance } from '../applications/dicePoolRecipes.js'
 import { filterRenderableSections, isPredefinedSectionAvailable, PREDEFINED_ACTOR_SHEET_SECTIONS, shouldRenderSection } from './actorTypeSections.js'
 import { changeTemporaryStep, collectAdjustedTraitPaths, findTraitByFormPath, getEffectiveTraitDice } from './temporaryTraitSteps.js'
+import { pruneImplicitTraitPresentation } from './traitPresentation.js'
 import { localizer } from '../scripts/foundryHelpers.js'
 import {
   removeItems,
@@ -63,6 +64,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       editProfileImage: function (event, target) {return this._editProfileImage(event, target)},
       openHelp: function () {new CortexPrimeHelp('systems/cortexprime/templates/help/index.html').render(true)},
       resourceImagePicker: function (event, target) { return this._resourceImagePicker(event, target) },
+      traitImagePicker: function (event, target) { return this._traitImagePicker(event, target) },
       resetTemporaryTraitSteps: function (event) { return this._resetTemporaryTraitSteps(event) }
     },
     form: {
@@ -170,6 +172,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     this._preserveSheetScroll()
     const updateData = foundry.utils.deepClone(submittedFormData.object)
     pruneImplicitResourceSettings(updateData, this.actor.toObject(false))
+    pruneImplicitTraitPresentation(updateData, this.actor.toObject(false))
 
     this._savePromise = this._savePromise.then(() => this.actor.update(updateData))
     return this._savePromise
@@ -198,6 +201,20 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
   async _onRender (context, options) {
     await super._onRender(context, options)
 
+    for (const image of this.element.querySelectorAll('.trait-image-cpt')) {
+      const handleError = () => {
+        const action = image.closest('.trait-image-action-cpt')
+        if (!action) {
+          image.hidden = true
+          return
+        }
+        action.hidden = true
+        action.nextElementSibling?.classList.remove('hide')
+      }
+      image.addEventListener('error', handleError, { once: true })
+      if (image.complete && image.naturalWidth === 0) handleError()
+    }
+
     for (const tab of this.element.querySelectorAll('.sheet-tabs [data-tab]')) {
       tab.addEventListener('click', async event => {
         event.preventDefault()
@@ -220,7 +237,7 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
       field.addEventListener('change', event => this._ppNumberChange(event))
     }
 
-    for (const select of this.element.querySelectorAll('.actor-value-type-select, .resource-image-display-select')) {
+    for (const select of this.element.querySelectorAll('.actor-value-type-select, .resource-image-display-select, .trait-image-display-select')) {
       select.addEventListener('change', async () => {
         await this._saveCurrentForm()
         this._preserveSheetScroll()
@@ -492,6 +509,30 @@ export class CortexPrimeActorSheet extends HandlebarsApplicationMixin(ActorSheet
     this._discardPreservedSheetScroll()
     const traitPath = path?.replace(/\.valueSettings\.image$/, '')
     if (!this.isEditable || !this.actor.isOwner || !isResourceTraitPath(traitPath)) return
+
+    const picker = new foundry.applications.apps.FilePicker({
+      type: 'image',
+      current: foundry.utils.getProperty(this.actor, path) ?? '',
+      callback: async image => {
+        this._preserveSheetScroll()
+        await this.actor.update({ [path]: image })
+        this._preserveSheetScroll()
+        await this.render({ force: true })
+      }
+    })
+    await picker.render(true)
+  }
+
+  async _traitImagePicker (event, target = event.currentTarget) {
+    event.preventDefault()
+    const { path } = target.dataset
+    await this._saveCurrentForm()
+    this._discardPreservedSheetScroll()
+    const traitPath = path?.replace(/\.presentation\.image$/, '')
+    if (!this.isEditable || !this.actor.isOwner || !/^system\.actorType\.traitSets\.[^.]+\.(traits|customTraits)\.[^.]+$/.test(traitPath ?? '')) return
+
+    const trait = foundry.utils.getProperty(this.actor, traitPath)
+    if (trait?.valueType !== 'die') return
 
     const picker = new foundry.applications.apps.FilePicker({
       type: 'image',
